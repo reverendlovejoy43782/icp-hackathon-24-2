@@ -1,0 +1,16 @@
+{
+    "canisters": {
+      "geohash": {
+        "type": "rust",
+        "candid": "geohash/geohash.did",
+        "wasm": "geohash/target/wasm32-unknown-unknown/release/geohash.wasm",
+        "build": "cd geohash && cargo build --release --target wasm32-unknown-unknown"
+      }
+    },
+    "networks": {
+      "local": {
+        "bind": "127.0.0.1:8000"
+      }
+    },
+    "version": 1
+  }

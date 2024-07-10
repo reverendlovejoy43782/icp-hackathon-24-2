@@ -1,0 +1,15 @@
+[package]
+name = "geohash"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+ic-cdk = "0.5.0"
+ic-cdk-macros = "0.5.0"
+serde = "1.0"
+serde_json = "1.0"
+geohash = "0.13.1"  # Use the latest available version
+candid = "0.7.9"
+
+[lib]
+crate-type = ["cdylib"]

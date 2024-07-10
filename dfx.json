@@ -1,0 +1,44 @@
+{
+    "canisters": {
+      "geohash": {
+        "type": "rust",
+        "candid": "geohash/geohash.did",
+        "wasm": "geohash/target/wasm32-unknown-unknown/release/geohash.wasm",
+        "build": "cd geohash && cargo build --release --target wasm32-unknown-unknown"
+      },
+      "dip721_nft_container": {
+        "type": "rust",
+        "candid": "dip721_nft_container/dip721-nft-container.did",
+        "wasm": "dip721_nft_container/target/wasm32-unknown-unknown/release/dip721_nft_container.wasm",
+        "build": "cd dip721_nft_container && cargo build --release --target wasm32-unknown-unknown"
+      },
+      "asset_canister": {
+        "type": "rust",
+        "candid": "asset_canister/asset.did",
+        "wasm": "asset_canister/target/wasm32-unknown-unknown/release/asset_canister.wasm",
+        "build": "cd asset_canister && cargo build --release --target wasm32-unknown-unknown"
+      },
+      "nft-wallet": {
+        "type": "rust",
+        "candid": "nft-wallet/nftwallet.did",
+        "wasm": "nft-wallet/target/wasm32-unknown-unknown/release/nft-wallet.wasm",
+        "build": "cd nft-wallet && cargo build --release --target wasm32-unknown-unknown"
+      },
+      "basic_bitcoin": {
+        "type": "rust",
+        "candid": "basic_bitcoin/src/basic_bitcoin.did",
+        "wasm": "basic_bitcoin/target/wasm32-unknown-unknown/release/basic_bitcoin.wasm",
+        "build": "cd basic_bitcoin && cargo build --release --target wasm32-unknown-unknown"
+      },
+      "frontend": {
+        "type": "assets",
+        "source": ["frontend/build"]
+      }
+    },
+    "networks": {
+      "local": {
+        "bind": "127.0.0.1:8000"
+      }
+    },
+    "version": 1
+  }
