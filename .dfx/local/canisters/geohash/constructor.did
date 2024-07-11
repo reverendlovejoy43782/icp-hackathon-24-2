@@ -1,0 +1,4 @@
+type Geolocation = record { latitude : float64; longitude : float64 };
+service : {
+  compute_geohash : (Geolocation) -> (text) query;
+}

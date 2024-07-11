@@ -5,20 +5,25 @@
         "wasm": "geohash/target/wasm32-unknown-unknown/release/geohash.wasm",
         "candid": "geohash/geohash.did"
       },
+      "frontend_backend": {
+        "main": "frontend/src/frontend_backend/main.mo",
+        "type": "motoko",
+        "dependencies": ["geohash"]
+      },
       "frontend": {
         "type": "assets",
-        "source": "frontend/build"
-      }
-    },
-    "defaults": {
-      "build": {
-        "packtool": ""
+        "source": ["frontend/src/frontend_frontend"]
       }
     },
     "networks": {
       "local": {
         "bind": "127.0.0.1:8000",
         "type": "ephemeral"
+      }
+    },
+    "defaults": {
+      "build": {
+        "packtool": ""
       }
     },
     "version": 1
