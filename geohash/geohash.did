@@ -1,4 +1,4 @@
+type Geolocation = record { latitude : float64; longitude : float64 };
 service : {
-  "compute_geohash": (record { latitude: float64; longitude: float64 }) -> (text);
-  "decode_geohash": (text) -> (record { latitude: float64; longitude: float64 }) query;
+  compute_geohash : (Geolocation) -> (text) query;
 }

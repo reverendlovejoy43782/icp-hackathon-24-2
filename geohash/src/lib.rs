@@ -1,35 +1,39 @@
 // SPDX-License-Identifier: MIT
 // (C) 2024 Thomas Magerl
 
+mod area_generator;
+mod grid_generator;
+mod grid_match;
 
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk_macros::*;
-use geohash::{encode, decode, Coord};
+use area_generator::calculate_area;
+use grid_match::find_nearest_geohash_with_bounds;
 
+// Define a struct for geolocation with latitude and longitude
 #[derive(CandidType, Deserialize)]
 struct Geolocation {
     latitude: f64,
     longitude: f64,
 }
 
+// Define an update function to compute geohash for a given geolocation
 #[update]
 fn compute_geohash(geolocation: Geolocation) -> String {
-    let coord = Coord {
-        y: geolocation.latitude,
-        x: geolocation.longitude,
-    };
-    encode(coord, 12).unwrap()
+    // Calculate the area for the given geolocation
+    let area = calculate_area(geolocation.latitude, geolocation.longitude);
+
+    // Find the nearest geohash within the calculated area
+    let nearest = find_nearest_geohash_with_bounds(geolocation.latitude, geolocation.longitude, &area);
+
+    // Print the geohash
+    ic_cdk::println!("Computed geohash: {}", nearest);
+
+    // Return the nearest geohash
+    nearest
 }
 
-#[query]
-fn decode_geohash(hash: String) -> Geolocation {
-    let (coord, _, _) = decode(hash.as_str()).unwrap();
-    Geolocation {
-        latitude: coord.y,
-        longitude: coord.x,
-    }
-}
 
-// Conditionally compile the tests module
+// Include the tests module for unit tests
 #[cfg(test)]
 mod tests;
