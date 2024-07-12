@@ -3,8 +3,9 @@
     "canisters": {
         "geohash": {
             "type": "rust",
-            "wasm": "geohash/target/wasm32-unknown-unknown/release/geohash_canister.wasm", 
+            "wasm": "geohash/target/wasm32-unknown-unknown/release/geohash_opt.wasm", 
             "candid": "geohash/geohash.did",  
+            "build": "cd geohash && cargo build --target wasm32-unknown-unknown --release",
             "package": "geohash_canister"
         },
         "frontend": {
