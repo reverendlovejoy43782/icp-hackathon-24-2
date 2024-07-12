@@ -46,23 +46,6 @@ fn compute_geohash(geolocation: Geolocation) -> (Area, String) {
     (area, nearest)
 }
 
-/*
-#[update]
-fn compute_geohash(geolocation: Geolocation) -> String {
-    // Calculate the area for the given geolocation
-    let area = calculate_area(geolocation.latitude, geolocation.longitude);
-
-    // Find the nearest geohash within the calculated area
-    let nearest = find_nearest_geohash_with_bounds(geolocation.latitude, geolocation.longitude, &area);
-
-    // Print the geohash
-    ic_cdk::println!("Computed geohash: {}", nearest);
-
-    // Return the nearest geohash
-    nearest
-}
-*/
-
 
 // Define a struct for area response to be used with Candid
 #[derive(CandidType, Deserialize)]
