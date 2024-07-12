@@ -12,12 +12,13 @@ use grid_match::find_nearest_geohash_with_bounds;
 use grid_generator::decode_geohash;
 use crate::area_generator::Area;
 
-#[query(name = "compute_geohash")]
+//#[query(name = "compute_geohash")]
+#[query(name = "query_compute_geohash")]
 fn candid_compute_geohash(geolocation: Geolocation) -> (Area, String) {
     compute_geohash(geolocation)
 }
 
-#[query(name = "compute_area")]
+#[query(name = "query_compute_area")]
 fn candid_compute_area(geohash: String) -> Result<AreaResponse, String> {
     compute_area(geohash)
 }

@@ -300,24 +300,24 @@ dependencies = [
 
 [[package]]
 name = "geohash"
-version = "0.1.0"
-dependencies = [
- "candid",
- "geohash 0.13.1",
- "ic-cdk",
- "ic-cdk-macros",
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "geohash"
 version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0fb94b1a65401d6cbf22958a9040aa364812c26674f841bee538b12c135db1e6"
 dependencies = [
  "geo-types",
  "libm",
+]
+
+[[package]]
+name = "geohash_canister"
+version = "0.1.0"
+dependencies = [
+ "candid",
+ "geohash",
+ "ic-cdk",
+ "ic-cdk-macros",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

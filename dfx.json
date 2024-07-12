@@ -1,19 +1,25 @@
 {
+    "version": 1,
     "canisters": {
-      "geohash": {
-        "type": "rust",
-        "wasm": "target/wasm32-unknown-unknown/release/geohash.wasm",
-        "candid": "src/geohash/geohash.did"
-      },
-      "frontend": {
-        "type": "assets",
-        "source": ["frontend/build"]
-      }
+        "geohash": {
+            "type": "rust",
+            "wasm": "geohash/target/wasm32-unknown-unknown/release/geohash_canister.wasm", 
+            "candid": "geohash/geohash.did",  
+            "package": "geohash_canister"
+        },
+        "frontend": {
+            "type": "assets",
+            "source": ["frontend/build"],
+            "package": "frontend"
+        }
     },
     "networks": {
-      "local": {
-        "bind": "127.0.0.1:8000"
-      }
+        "local": {
+            "bind": "127.0.0.1:8001"
+        }
     },
-    "version": 1
-  }
+    "package": {
+        "name": "icp_hackathon_2",
+        "version": "0.1.0"
+    }
+}
