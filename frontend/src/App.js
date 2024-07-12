@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Actor, HttpAgent } from '@dfinity/agent';
-import { idlFactory as geohash_idl, canisterId as geohash_id } from './declarations/geohash';
+import { createActor } from './declarations/geohash';
 
 function App() {
   const [latitude, setLatitude] = useState('');
@@ -9,9 +8,10 @@ function App() {
   const [response, setResponse] = useState(null);
   const [error, setError] = useState(null);
 
-  // Configure the agent to use the correct host for the geohash canister
-  const agent = new HttpAgent({ host: 'http://127.0.0.1:8001' });
-  const geohashActor = Actor.createActor(geohash_idl, { agent, canisterId: geohash_id });
+  // Configure the actor for the geohash canister
+  const geohashActor = createActor(process.env.REACT_APP_GEOHASH_CANISTER_ID, {
+    agentOptions: { host: 'http://127.0.0.1:8001' },
+  });
 
   const handleGeolocationSubmit = async () => {
     try {
