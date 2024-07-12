@@ -1,29 +1,18 @@
 {
     "canisters": {
       "geohash": {
-        "type": "custom",
-        "wasm": "geohash/target/wasm32-unknown-unknown/release/geohash.wasm",
-        "candid": "geohash/geohash.did"
-      },
-      "frontend_backend": {
-        "main": "frontend/src/frontend_backend/main.mo",
-        "type": "motoko",
-        "dependencies": ["geohash"]
+        "type": "rust",
+        "wasm": "target/wasm32-unknown-unknown/release/geohash.wasm",
+        "candid": "src/geohash/geohash.did"
       },
       "frontend": {
         "type": "assets",
-        "source": ["frontend/src/frontend_frontend"]
+        "source": ["frontend/build"]
       }
     },
     "networks": {
       "local": {
-        "bind": "127.0.0.1:8000",
-        "type": "ephemeral"
-      }
-    },
-    "defaults": {
-      "build": {
-        "packtool": ""
+        "bind": "127.0.0.1:8000"
       }
     },
     "version": 1
