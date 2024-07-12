@@ -4,9 +4,9 @@ https://www.encode.club/icp-chain-fusion-hackathon
 
 
 
-# Geohash Canister Logic and Testing
+## Geohash Canister
 
-## 1. Geohash Canister Logic
+### 1. Geohash Canister Logic
 
 The Geohash Canister is designed to handle geolocation data and convert it into geohashes, as well as decode geohashes back into geographical coordinates. The canister provides two main functionalities:
 
@@ -20,7 +20,7 @@ The Geohash Canister is designed to handle geolocation data and convert it into 
     - **Output**: AreaResponse which includes the latitude and longitude boundaries (lat_start, lon_start, lat_end, lon_end) and the original geohash.
     - **What it does**: The function decodes the provided geohash into latitude and longitude, and then calculates the geographical area (square bounds) that encompasses these coordinates.
 
-## 2. Tests
+### 2. Tests
 
 The testing suite for the Geohash Canister ensures the correctness and consistency of both the geohash computation and the geographical bounds determination. The key aspects tested include:
 
@@ -30,8 +30,6 @@ The testing suite for the Geohash Canister ensures the correctness and consisten
 
 The tests are designed to check both the forward (geolocation to geohash) and reverse (geohash to square bounds) processes to ensure full coverage and reliability of the canister's functionalities.
 
-# Code repository for ICP Hackathon
-
-https://www.encode.club/icp-chain-fusion-hackathon
-
+## Comments
+Please note:
 This code is unfinished / in development
