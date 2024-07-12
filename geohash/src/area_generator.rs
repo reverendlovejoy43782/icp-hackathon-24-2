@@ -1,7 +1,16 @@
 // SPDX-License-Identifier: MIT
 // (C) 2024 Thomas Magerl
 
+use ic_cdk::export::candid::{CandidType, Deserialize};
 
+
+#[derive(Debug, CandidType, Deserialize)]
+pub struct Area {
+    pub lat_start: f64,
+    pub lon_start: f64,
+    pub lat_end: f64,
+    pub lon_end: f64,
+}
 
 
 pub fn calculate_area(lat: f64, lon: f64) -> Area {
@@ -22,10 +31,5 @@ pub fn calculate_area(lat: f64, lon: f64) -> Area {
     }
 }
 
-#[derive(Debug)]
-pub struct Area {
-    pub lat_start: f64,
-    pub lon_start: f64,
-    pub lat_end: f64,
-    pub lon_end: f64,
-}
+
+
