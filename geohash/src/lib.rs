@@ -14,14 +14,41 @@ use crate::area_generator::Area;
 
 //#[query(name = "compute_geohash")]
 #[query(name = "query_compute_geohash")]
-fn candid_compute_geohash(geolocation: Geolocation) -> (Area, String) {
+fn query_compute_geohash(geolocation: Geolocation) -> (Area, String) {
     compute_geohash(geolocation)
 }
 
+
+
+#[query(name = "query_compute_area")]
+fn query_compute_area(geohash: String) -> AreaResponse {
+    // Decode the geohash back into coordinates
+    let coord = decode_geohash(&geohash).unwrap();
+
+    // Calculate the area for the given coordinates
+    let area = calculate_area(coord.y, coord.x);
+
+    // Print the decoded coordinates and area
+    ic_cdk::println!("Decoded coordinates: ({}, {})", coord.y, coord.x);
+    ic_cdk::println!("Calculated area: {:?}", area);
+
+    // Return the area and the original geohash in AreaResponse
+    AreaResponse {
+        lat_start: area.lat_start,
+        lon_start: area.lon_start,
+        lat_end: area.lat_end,
+        lon_end: area.lon_end,
+        geohash,
+    }
+}
+
+
+/*
 #[query(name = "query_compute_area")]
 fn candid_compute_area(geohash: String) -> Result<AreaResponse, String> {
     compute_area(geohash)
 }
+*/
 
 // Define a struct for geolocation with latitude and longitude
 #[derive(CandidType, Deserialize)]
