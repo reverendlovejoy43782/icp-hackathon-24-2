@@ -4,16 +4,16 @@
   "config": {
     "http_handler": {
       "port": null,
-      "write_port_to": "/Users/thomasmagerl/Library/Mobile Documents/com~apple~CloudDocs/1 Projekte/icp_hackathon_2/.dfx/network/local/replica-configuration/replica-1.port"
+      "write_port_to": "/Users/thomasmagerl/Library/Mobile Documents/com~apple~CloudDocs/1 Projekte/icp-hackathon-2/.dfx/network/local/replica-configuration/replica-1.port"
     },
     "state_manager": {
-      "state_root": "/Users/thomasmagerl/Library/Mobile Documents/com~apple~CloudDocs/1 Projekte/icp_hackathon_2/.dfx/network/local/state/replicated_state"
+      "state_root": "/Users/thomasmagerl/Library/Mobile Documents/com~apple~CloudDocs/1 Projekte/icp-hackathon-2/.dfx/network/local/state/replicated_state"
     },
     "crypto": {
-      "crypto_root": "/Users/thomasmagerl/Library/Mobile Documents/com~apple~CloudDocs/1 Projekte/icp_hackathon_2/.dfx/network/local/state/crypto_store"
+      "crypto_root": "/Users/thomasmagerl/Library/Mobile Documents/com~apple~CloudDocs/1 Projekte/icp-hackathon-2/.dfx/network/local/state/crypto_store"
     },
     "artifact_pool": {
-      "consensus_pool_path": "/Users/thomasmagerl/Library/Mobile Documents/com~apple~CloudDocs/1 Projekte/icp_hackathon_2/.dfx/network/local/state/consensus_pool"
+      "consensus_pool_path": "/Users/thomasmagerl/Library/Mobile Documents/com~apple~CloudDocs/1 Projekte/icp-hackathon-2/.dfx/network/local/state/consensus_pool"
     },
     "subnet_type": "application",
     "btc_adapter": {
@@ -22,7 +22,7 @@
     },
     "canister_http_adapter": {
       "enabled": true,
-      "socket_path": "/var/folders/5c/lhpx_t2n0_jby3zmj_tly5lh0000gn/T/ic-https-outcalls-adapter-socket.89778.1721026144"
+      "socket_path": "/var/folders/5c/lhpx_t2n0_jby3zmj_tly5lh0000gn/T/ic-https-outcalls-adapter-socket.1713.1721034846"
     },
     "log_level": "error",
     "artificial_delay": 600,
