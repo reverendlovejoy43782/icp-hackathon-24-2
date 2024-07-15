@@ -4,8 +4,8 @@
         "geohash": {
             "type": "rust",
             "wasm": "geohash/target/wasm32-unknown-unknown/release/geohash_opt.wasm", 
-            "candid": "geohash/src/geohash/geohash.did",  
-            "build": "cd geohash && cargo build --target wasm32-unknown-unknown --release",
+            "candid": "geohash/src/geohash/geohash.did",
+            "build": "cd geohash && cargo build --target wasm32-unknown-unknown --release --target-dir target && ic-wasm target/wasm32-unknown-unknown/release/geohash_canister.wasm -o target/wasm32-unknown-unknown/release/geohash_opt.wasm shrink",  
             "package": "geohash_canister"
         },
         "frontend": {
