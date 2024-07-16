@@ -9,12 +9,12 @@ const STEP_METERS: f64 = 500.0;
 const METERS_IN_DEGREE_LAT: f64 = 111320.0;
 
 // Helper function to generate test locations within a given square
-fn generate_test_locations(base_lat: f64, base_lon: f64, lat_range: f64, lon_range: f64) -> Vec<((f64, f64), char)> {
+fn generate_test_locations(base_lat: f64, base_lon: f64, _lat_range: f64, _lon_range: f64) -> Vec<((f64, f64), char)> {
     // Define a buffer to avoid edge effects
-    let buffer = 0.01;
+    //let buffer = 0.01;
     // Adjust latitude and longitude ranges by the buffer
-    let lat_range = lat_range - buffer * 2.0;
-    let lon_range = lon_range - buffer * 2.0;
+    // let lat_range = lat_range - buffer * 2.0;
+    // let lon_range = lon_range - buffer * 2.0;
 
     // Return a vector of test locations within the square, each associated with a letter (each square has a number, each location within a square has a letter e.g. 1_A)
     vec![

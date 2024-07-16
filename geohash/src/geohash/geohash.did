@@ -1,14 +1,13 @@
-type Geolocation = record { latitude : float64; longitude : float64 };
+type Geolocation = record { latitude: float64; longitude: float64 };
 type AreaResponse = record {
-  lat_start : float64;
-  lon_start : float64;
-  lat_end : float64;
-  lon_end : float64;
-  geohash : text;
+  lat_start: float64;
+  lon_start: float64;
+  lat_end: float64;
+  lon_end: float64;
+  geohash: text;
 };
 
 service : {
-  query_compute_geohash : (Geolocation) -> (record { lat_start : float64; lon_start : float64; lat_end : float64; lon_end : float64; }, text) query;
-  query_compute_area : (text) -> (AreaResponse) query;
-  //query_compute_area : (text) -> (record { lat_start : float64; lon_start : float64; lat_end : float64; lon_end : float64; geohash : text }) query;
+  query_compute_geohash: (Geolocation) -> (AreaResponse) query;
+  query_compute_area: (text) -> (AreaResponse) query;
 }

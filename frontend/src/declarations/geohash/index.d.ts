@@ -48,3 +48,5 @@ export declare const createActor: (
  * @constructs {@link ActorSubClass}
  */
 export declare const geohash: ActorSubclass<_SERVICE>;
+
+
