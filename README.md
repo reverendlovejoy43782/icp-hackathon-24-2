@@ -3,10 +3,19 @@
 https://www.encode.club/icp-chain-fusion-hackathon
 
 
+# 1. Usage
 
-## 1. Geohash Canister
+- Decentralised data layer of the world
+- The world is divided into fixed 500 x 500 meter squares
+- Each square can hold information, such as events or conditions specific to that location
+- Each square can hold value, such as USDC, Ether, or Bitcoin
+- Users can interact with squares by reading the information, adding value to a square, and contributing information about a location within a square
+- Value is distributed to users on the square e.g. for contributing information
 
-### 1.1 Logic
+# 2. Tech
+
+## 2.1 Geohash Canister
+
 
 The Geohash Canister is designed to handle geolocation data and convert it into geohashes, as well as decode geohashes back into geographical coordinates. The canister provides two main functionalities:
 
@@ -20,19 +29,8 @@ The Geohash Canister is designed to handle geolocation data and convert it into 
     - **Output**: AreaResponse which includes the latitude and longitude boundaries (lat_start, lon_start, lat_end, lon_end) and the original geohash.
     - **What it does**: The function decodes the provided geohash into latitude and longitude, and then calculates the geographical area (square bounds) that encompasses these coordinates.
 
-### 1.2 Tests
 
-The testing suite for the Geohash Canister ensures the correctness and consistency of both the geohash computation and the geographical bounds determination. The key aspects tested include:
-
-- **Geolocation to Geohash Conversion**: Verifies that the geohash computed for a given geolocation is correct.
-- **Geohash to Square Bounds Conversion**: Ensures that the geographical area (square bounds) returned for a given geohash is accurate.
-- **Consistency Within a Square**: Tests multiple geolocations within a specific square to confirm that the geohashes and square bounds remain consistent.
-
-The tests are designed to check both the forward (geolocation to geohash) and reverse (geohash to square bounds) processes to ensure full coverage and reliability of the canister's functionalities.
-
-## 2. Frontend Canister Logic
-
-### 2.1 Logic
+## 2.2 Frontend Canister Logic
 
 The Frontend Canister is responsible for providing the user interface to interact with the Geohash Canister. It allows users to input geolocation data or geohashes and visualize the corresponding geographical bounds on a map. The main functionalities include:
 
