@@ -67,11 +67,12 @@ pub fn create_grid_with_geohash(lat_start: f64, lon_start: f64, lat_end: f64, lo
             let square_bounds = calculate_square_bounds(center_lat, center_lon, step_degrees_lat, step_degrees_lon);
 
             // Print the details of the area and the square
+            /*
             println!("GRID_GENERATOR_ area bounds: lat_start = {}, lon_start = {}, lat_end = {}, lon_end = {}", lat_start, lon_start, lat_end, lon_end);
             println!("GRID_GENERATOR_ step size in degrees: lat_step = {}", step_degrees_lat);
             println!("GRID_GENERATOR_ latitude: {}, step size in degrees for longitude: {}", lat, step_degrees_lon);
             println!("GRID_GENERATOR_ square center: ({}, {}), geohash: {}, bounds: {:?}", center_lat, center_lon, geohash_key, square_bounds);
-
+            */
             // Add the grid point with its geohash and bounds to the array
             grid_points_with_geohash.push((center_lat, center_lon, geohash_key, square_bounds));
         }

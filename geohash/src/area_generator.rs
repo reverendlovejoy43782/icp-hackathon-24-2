@@ -38,7 +38,7 @@ pub fn calculate_area(lat: f64, lon: f64) -> Area {
     };
 
     // Print the calculated area
-    println!("AREA_GENERATOR_area: {:?}", area);
+    //println!("AREA_GENERATOR_area: {:?}", area);
 
     area
 }
