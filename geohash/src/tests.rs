@@ -1,47 +1,54 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License: MIT
 // (C) 2024 Thomas Magerl
 
 use crate::{query_compute_geohash, Geolocation, AreaResponse};
+use rand::Rng;
+use std::fmt::{Debug, Formatter, Result};
 
-// Define a set of test geolocations covering the globe
-const TEST_GEOLOCATIONS: [(f64, f64); 25] = [
-    (37.7749, -122.4194), // San Francisco, USA
-    (51.5074, -0.1278),   // London, UK
-    (35.6895, 139.6917),  // Tokyo, Japan
-    (-33.8688, 151.2093), // Sydney, Australia
-    (48.8566, 2.3522),    // Paris, France
-    (40.7128, -74.0060),  // New York, USA
-    (55.7558, 37.6173),   // Moscow, Russia
-    (-23.5505, -46.6333), // São Paulo, Brazil
-    (19.0760, 72.8777),   // Mumbai, India
-    (34.0522, -118.2437), // Los Angeles, USA
-    (-26.2041, 28.0473),  // Johannesburg, South Africa
-    (39.9042, 116.4074),  // Beijing, China
-    (1.3521, 103.8198),   // Singapore
-    (35.6762, 139.6503),  // Tokyo, Japan (different location)
-    (41.9028, 12.4964),   // Rome, Italy
-    (34.6937, 135.5023),  // Osaka, Japan
-    (22.3964, 114.1095),  // Hong Kong
-    (55.7558, 37.6173),   // Moscow, Russia
-    (37.5665, 126.9780),  // Seoul, South Korea
-    (30.0444, 31.2357),   // Cairo, Egypt
-    (-34.6037, -58.3816), // Buenos Aires, Argentina
-    (50.8503, 4.3517),    // Brussels, Belgium
-    (40.4168, -3.7038),   // Madrid, Spain
-    (52.5200, 13.4050),   // Berlin, Germany
-    (19.4326, -99.1332),  // Mexico City, Mexico
-];
+// Ensure AreaResponse implements Debug trait for debugging
+impl Debug for AreaResponse {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        f.debug_struct("AreaResponse")
+            .field("lat_start", &self.lat_start)
+            .field("lon_start", &self.lon_start)
+            .field("lat_end", &self.lat_end)
+            .field("lon_end", &self.lon_end)
+            .field("geohash", &self.geohash)
+            .finish()
+    }
+}
 
-fn validate_geolocation_in_area(lat: f64, lon: f64, area: &AreaResponse) {
-    assert!(lat >= area.lat_start && lat <= area.lat_end, "Latitude is not within the area bounds");
-    assert!(lon >= area.lon_start && lon <= area.lon_end, "Longitude is not within the area bounds");
+// Function to generate 100 geolocations spread across the globe
+fn generate_test_geolocations() -> Vec<((f64, f64), usize)> {
+    let mut geolocations = Vec::new();
+    let mut rng = rand::thread_rng();
+    
+    for i in 0..10 {
+        for j in 0..10 {
+            let lat = -90.0 + i as f64 * 18.0 + rng.gen_range(0.0..18.0);  // Randomize within each 18-degree segment
+            let lon = -180.0 + j as f64 * 36.0 + rng.gen_range(0.0..36.0);  // Randomize within each 36-degree segment
+            geolocations.push(((lat, lon), i * 10 + j + 1));
+        }
+    }
+
+    geolocations
+}
+
+fn validate_geolocation_in_area(lat: f64, lon: f64, area: &AreaResponse, test_case_number: usize) {
+    println!("Test case {}: Latitude = {}, Area.lat_start = {}, Area.lat_end = {}", test_case_number, lat, area.lat_start, area.lat_end);
+    println!("Test case {}: Longitude = {}, Area.lon_start = {}, Area.lon_end = {}", test_case_number, lon, area.lon_start, area.lon_end);
+    assert!(lat >= area.lat_start && lat <= area.lat_end, "Test case {}: Latitude is not within the area bounds", test_case_number);
+    assert!(lon >= area.lon_start && lon <= area.lon_end, "Test case {}: Longitude is not within the area bounds", test_case_number);
 }
 
 #[test]
 fn test_geolocation_within_square() {
-    for &(lat, lon) in &TEST_GEOLOCATIONS {
+    let test_geolocations = generate_test_geolocations();
+    
+    for &((lat, lon), test_case_number) in &test_geolocations {
         let geolocation = Geolocation { latitude: lat, longitude: lon };
         let area_response: AreaResponse = query_compute_geohash(geolocation);
-        validate_geolocation_in_area(lat, lon, &area_response);
+        println!("Test case {}: Geolocation = ({}, {}), Area = {:?}", test_case_number, lat, lon, area_response);
+        validate_geolocation_in_area(lat, lon, &area_response, test_case_number);
     }
 }

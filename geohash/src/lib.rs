@@ -34,8 +34,8 @@ fn compute_geohash(geolocation: Geolocation) -> AreaResponse {
     let (nearest_geohash, bounds) = find_nearest_geohash_with_bounds(geolocation.latitude, geolocation.longitude);
 
     // Print the geohash and bounds
-    ic_cdk::println!("LIB.RS_COMPUTE_GEOHASH_Bounds: {:?}", bounds);
-    ic_cdk::println!("LIB.RS_COMPUTE_GEOHASH_Computed geohash: {}", nearest_geohash);
+    //ic_cdk::println!("LIB.RS_COMPUTE_GEOHASH_Bounds: {:?}", bounds);
+    //ic_cdk::println!("LIB.RS_COMPUTE_GEOHASH_Computed geohash: {}", nearest_geohash);
     
 
     // Return the matched square's area and the nearest geohash
@@ -65,9 +65,11 @@ fn compute_area(geohash: String) -> AreaResponse {
     let (_nearest_geohash, bounds) = find_nearest_geohash_with_bounds(coord.y, coord.x);
 
     // Print the decoded coordinates and area
+    /*
     ic_cdk::println!("LIB:RS_COMPUTE_AREA_Decoded coordinates: ({}, {})", coord.y, coord.x);
     ic_cdk::println!("LIB:RS_COMPUTE_AREA_Matched area: {:?}", bounds);
     ic_cdk::println!("LIB:RS_COMPUTE_AREA_Original geohash: {}", geohash);
+    */
 
     // Return the matched square's area and the original geohash
     AreaResponse {
