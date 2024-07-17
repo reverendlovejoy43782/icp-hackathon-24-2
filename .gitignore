@@ -16,3 +16,7 @@ Cargo.lock
 
 # dfx
 .dfx/
+
+
+# ENV
+.env

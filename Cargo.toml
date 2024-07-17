@@ -1,4 +1,7 @@
 [workspace]
 members = [
-    "geohash"
+    "geohash",
+    "dip721_nft_container",
+    "nft-wallet"
 ]
+resolver = "2"

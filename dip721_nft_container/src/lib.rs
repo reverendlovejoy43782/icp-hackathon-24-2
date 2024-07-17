@@ -191,10 +191,12 @@ fn symbol() -> String {
     STATE.with(|state| state.borrow().symbol.clone())
 }
 
+
 const DEFAULT_LOGO: LogoResult = LogoResult {
     data: Cow::Borrowed(include_base64!("logo.png")),
     logo_type: Cow::Borrowed("image/png"),
 };
+
 
 #[query(name = "totalSupplyDip721")]
 fn total_supply() -> u64 {
@@ -262,7 +264,8 @@ fn transfer_from_notify(from: Principal, to: Principal, token_id: u64, data: Vec
         // That means the original transfer must reply before that happens, or the caller will be
         // convinced that the transfer failed when it actually succeeded. So we don't await the call,
         // so that we'll reply immediately regardless of how long the notification call takes.
-        let _ = api::call::call_raw(to, "onDIP721Received", arg, 0);
+        //let _ = api::call::call_raw(to, "onDIP721Received", arg, 0);
+        let _ = api::call::call_raw(to, "onDIP721Received", &arg, 0);
     }
     Ok(res)
 }
@@ -367,6 +370,68 @@ fn is_approved_for_all(operator: Principal) -> bool {
 // mint interface
 // --------------
 
+#[derive(CandidType, Deserialize, Clone)]
+struct Wallet {
+    ether: String,
+    usdc: String,
+    bitcoin: String,
+}
+
+#[derive(CandidType, Deserialize, Clone)]
+struct SquareProperties {
+    geohash: String,
+    metadata: String,
+    wallet: Wallet,
+}
+
+#[update(name = "mintDip721")]
+fn mint(
+    to: Principal,
+    metadata: SquareProperties,
+    blob_content: Vec<u8>,
+) -> Result<MintResult, ConstrainedError> {
+    let (txid, tkid) = STATE.with(|state| {
+        let mut state = state.borrow_mut();
+        if !state.custodians.contains(&api::caller()) {
+            return Err(ConstrainedError::Unauthorized);
+        }
+        let new_id = state.nfts.len() as u64;
+        let nft = Nft {
+            owner: to,
+            approved: None,
+            id: new_id,
+            metadata: metadata_to_nft_metadata(metadata),
+            content: blob_content,
+        };
+        state.nfts.push(nft);
+        Ok((state.next_txid(), new_id))
+    })?;
+    http::add_hash(tkid);
+    Ok(MintResult {
+        id: txid,
+        token_id: tkid,
+    })
+}
+
+fn metadata_to_nft_metadata(properties: SquareProperties) -> MetadataDesc {
+    vec![
+        MetadataPart {
+            purpose: MetadataPurpose::Rendered,
+            key_val_data: {
+                let mut map = HashMap::new();
+                map.insert("geohash".to_string(), MetadataVal::TextContent(properties.geohash));
+                map.insert("metadata".to_string(), MetadataVal::TextContent(properties.metadata));
+                map.insert("ether".to_string(), MetadataVal::TextContent(properties.wallet.ether));
+                map.insert("usdc".to_string(), MetadataVal::TextContent(properties.wallet.usdc));
+                map.insert("bitcoin".to_string(), MetadataVal::TextContent(properties.wallet.bitcoin));
+                map
+            },
+            data: vec![],
+        },
+    ]
+}
+
+/*
 #[update(name = "mintDip721")]
 fn mint(
     to: Principal,
@@ -395,6 +460,7 @@ fn mint(
         token_id: tkid,
     })
 }
+*/
 
 // --------------
 // burn interface

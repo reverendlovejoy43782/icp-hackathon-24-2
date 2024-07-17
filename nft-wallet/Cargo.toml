@@ -7,8 +7,8 @@ edition = "2021"
 
 [dependencies]
 crc32fast = "1.3"
-ic-cdk = "0.4"
-ic-cdk-macros = { version = "0.4", git = "https://github.com/dfinity/cdk-rs", rev = "28eb8f75540d132818d01ece0f15a48aa43d3726" }
+ic-cdk = "0.5.7"
+ic-cdk-macros = "0.5.7"
 serde = { version = "1", features = ["derive"] }
 hex = "0.4"
 url = "2.2"
@@ -17,7 +17,7 @@ mime_guess = "2"
 once_cell = "1.9"
 parking_lot = "0.12"
 ic-certified-map = "0.3"
-ic-certified-assets = "0.1"
+ic-certified-assets = "0.2.5"
 serde_cbor = "0.10"
 base64 = "0.13"
 candid = "0.7"

@@ -1,6 +1,18 @@
 // SPDX-License-Identifier: MIT
 // (C) 2024 Thomas Magerl
 
+
+// START IMPORTS AND PRAGMAS
+
+// START NFT functionality
+
+mod nft; // Declare the nft module
+use nft::mint_and_transfer_nft; // Import the function
+use nft::TokenId; // Import the TokenId type
+
+// END NFT functionality
+
+
 mod area_generator;
 mod grid_generator;
 mod grid_match;
@@ -9,6 +21,11 @@ use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk_macros::*;
 use grid_match::find_nearest_geohash_with_bounds;
 use grid_generator::decode_geohash;
+
+// END IMPORTS AND PRAGMAS
+
+
+// START STRUCTS
 
 // Define a struct for geolocation with latitude and longitude
 #[derive(CandidType, Deserialize)]
@@ -26,6 +43,10 @@ struct AreaResponse {
     lon_end: f64,
     geohash: String,
 }
+
+// END STRUCTS
+
+// START FUNCTIONS
 
 // Define an update function to compute the area and geohash for a given geolocation
 #[update]
@@ -86,6 +107,25 @@ fn compute_area(geohash: String) -> AreaResponse {
 fn query_compute_area(geohash: String) -> AreaResponse {
     compute_area(geohash)
 }
+
+
+// START NFT functionality
+
+#[update]
+async fn mint_and_transfer_geohash_nft(
+    geohash: String,
+    metadata: String,
+    ether: String,
+    usdc: String,
+    bitcoin: String,
+) -> Result<TokenId, String> {
+    mint_and_transfer_nft(geohash, metadata, ether, usdc, bitcoin).await
+}
+
+// END NFT functionality
+
+// END FUNCTIONS
+
 
 // Include the tests module for unit tests
 #[cfg(test)]

@@ -1,14 +1,15 @@
 [package]
 name = "geohash_canister"
 version = "0.1.0"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 # Dependencies for Internet Computer SDK
-ic-cdk = "0.5.0"
-ic-cdk-macros = "0.5.0"
+ic-cdk = "0.5.7"
+ic-cdk-macros = "0.5.7"
 rand = "0.8"
 getrandom = { version = "0.2.3", features = ["js"] }
+dotenvy = "0.15.6"
 
 # Dependencies for serialization and deserialization
 serde = "1.0"
