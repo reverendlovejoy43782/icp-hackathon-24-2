@@ -13,7 +13,7 @@ export interface AreaResponse {
   lat_end: number;
   lon_end: number;
   geohash: string;
-  owned_nfts: Nft[];
+  nft_square: Nft[];
 }
 
 export interface Geolocation {

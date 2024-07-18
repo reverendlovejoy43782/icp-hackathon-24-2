@@ -15,7 +15,7 @@ type AreaResponse = record {
   lat_end: float64;
   lon_end: float64;
   geohash: text;
-  owned_nfts: vec Nft; 
+  nft_square: vec Nft; 
 };
 
 service : {

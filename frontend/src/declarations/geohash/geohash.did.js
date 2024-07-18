@@ -11,7 +11,7 @@ export const idlFactory = ({ IDL }) => {
     lat_end: IDL.Float64,
     lon_end: IDL.Float64,
     geohash: IDL.Text,
-    owned_nfts: IDL.Vec(Nft),
+    nft_square: IDL.Vec(Nft),
   });
 
   const Geolocation = IDL.Record({

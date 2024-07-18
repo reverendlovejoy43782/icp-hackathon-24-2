@@ -13,7 +13,7 @@
             "source": ["frontend/build"],
             "package": "frontend"
         },
-        "dip721": {
+        "dip721_nft_container": {
             "type": "rust",
             "wasm": "dip721_nft_container/target/wasm32-unknown-unknown/release/dip721_opt.wasm",
             "candid": "dip721_nft_container/dip721-nft-container.did",
