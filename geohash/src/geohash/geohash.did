@@ -1,13 +1,24 @@
-type Geolocation = record { latitude: float64; longitude: float64 };
+type Nft = record {
+  canister: principal;
+  index: nat64;
+  metadata: text;
+};
+
+type Geolocation = record { 
+  latitude: float64; 
+  longitude: float64; 
+};
+
 type AreaResponse = record {
   lat_start: float64;
   lon_start: float64;
   lat_end: float64;
   lon_end: float64;
   geohash: text;
+  owned_nfts: vec Nft; 
 };
 
 service : {
-  query_compute_geohash: (Geolocation) -> (AreaResponse) query;
-  query_compute_area: (text) -> (AreaResponse) query;
+  compute_geohash: (Geolocation) -> (AreaResponse);
+  compute_area: (text) -> (AreaResponse);
 }

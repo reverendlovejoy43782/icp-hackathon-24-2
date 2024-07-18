@@ -6,9 +6,9 @@
 
 // START NFT functionality
 
-mod nft; // Declare the nft module
-use nft::mint_and_transfer_nft; // Import the function
-use nft::TokenId; // Import the TokenId type
+mod nft_lookup;
+use nft_lookup::{init_nft_canister_id, get_nfts_by_geohash, Nft};
+
 
 // END NFT functionality
 
@@ -21,6 +21,9 @@ use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk_macros::*;
 use grid_match::find_nearest_geohash_with_bounds;
 use grid_generator::decode_geohash;
+use dotenvy::dotenv;
+use std::env;
+use ic_cdk::export::Principal;
 
 // END IMPORTS AND PRAGMAS
 
@@ -42,17 +45,33 @@ struct AreaResponse {
     lat_end: f64,
     lon_end: f64,
     geohash: String,
+    owned_nfts: Vec<Nft>, // New field for owned NFTs
 }
 
 // END STRUCTS
 
 // START FUNCTIONS
 
+// Define an initialization function to load the NFT wallet canister ID from the environment variables
+#[init]
+fn init() {
+    let wallet_canister_id = "br5f7-7uaaa-aaaaa-qaaca-cai";
+    let wallet_canister_principal = Principal::from_text(wallet_canister_id)
+        .expect("Invalid hardcoded NFT_WALLET_CANISTER_ID principal");
+    init_nft_canister_id(wallet_canister_principal);
+    ic_cdk::println!("NFT_WALLET_CANISTER_ID hardcoded and loaded successfully.");
+}
+
+
+
 // Define an update function to compute the area and geohash for a given geolocation
 #[update]
-fn compute_geohash(geolocation: Geolocation) -> AreaResponse {
+async fn compute_geohash(geolocation: Geolocation) -> AreaResponse {
     // Calculate the grid and match the geolocation to the nearest grid square
     let (nearest_geohash, bounds) = find_nearest_geohash_with_bounds(geolocation.latitude, geolocation.longitude);
+
+    // Fetch NFTs by geohash
+    let nft_info = get_nfts_by_geohash(nearest_geohash.clone()).await.unwrap_or_else(|_| nft_lookup::NftInfo { owned_nfts: Vec::new() });
 
     // Print the geohash and bounds
     //ic_cdk::println!("LIB.RS_COMPUTE_GEOHASH_Bounds: {:?}", bounds);
@@ -66,24 +85,29 @@ fn compute_geohash(geolocation: Geolocation) -> AreaResponse {
         lat_end: bounds.lat_end,
         lon_end: bounds.lon_end,
         geohash: nearest_geohash,
+        owned_nfts: nft_info.owned_nfts, // Fetch owned NFTs
     }
     
 }
 
+/*
 // Define a query function to compute the area and geohash for a given geolocation
 #[query(name = "query_compute_geohash")]
-fn query_compute_geohash(geolocation: Geolocation) -> AreaResponse {
-    compute_geohash(geolocation)
+async fn query_compute_geohash(geolocation: Geolocation) -> AreaResponse {
+    compute_geohash(geolocation).await
 }
-
+*/
 // Define an update function to compute the area for a given geohash
 #[update]
-fn compute_area(geohash: String) -> AreaResponse {
+async fn compute_area(geohash: String) -> AreaResponse {
     // Decode the geohash back into coordinates
     let coord = decode_geohash(&geohash).unwrap();
 
     // Calculate the grid and match the coordinates to the nearest grid square
-    let (_nearest_geohash, bounds) = find_nearest_geohash_with_bounds(coord.y, coord.x);
+    let (nearest_geohash, bounds) = find_nearest_geohash_with_bounds(coord.y, coord.x);
+
+    // Fetch NFTs by geohash
+    let nft_info = get_nfts_by_geohash(nearest_geohash.clone()).await.unwrap_or_else(|_| nft_lookup::NftInfo { owned_nfts: Vec::new() });
 
     // Print the decoded coordinates and area
     /*
@@ -99,18 +123,20 @@ fn compute_area(geohash: String) -> AreaResponse {
         lat_end: bounds.lat_end,
         lon_end: bounds.lon_end,
         geohash,
+        owned_nfts: nft_info.owned_nfts, // Fetch owned NFTs
     }
 }
 
+/*
 // Define a query function to compute the area for a given geohash
 #[query(name = "query_compute_area")]
-fn query_compute_area(geohash: String) -> AreaResponse {
-    compute_area(geohash)
+async fn query_compute_area(geohash: String) -> AreaResponse {
+    compute_area(geohash).await
 }
-
+*/
 
 // START NFT functionality
-
+/*
 #[update]
 async fn mint_and_transfer_geohash_nft(
     geohash: String,
@@ -121,7 +147,7 @@ async fn mint_and_transfer_geohash_nft(
 ) -> Result<TokenId, String> {
     mint_and_transfer_nft(geohash, metadata, ether, usdc, bitcoin).await
 }
-
+*/
 // END NFT functionality
 
 // END FUNCTIONS

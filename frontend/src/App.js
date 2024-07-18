@@ -38,7 +38,7 @@ function App() {
       const geolocation = { latitude: parseFloat(latitude), longitude: parseFloat(longitude) };
       console.log('Sending geolocation:', geolocation);
 
-      const result = await geohashActor.query_compute_geohash(geolocation);
+      const result = await geohashActor.compute_geohash(geolocation);
       console.log('Received result:', result);
 
       if (result && result.lat_start !== undefined && result.lon_start !== undefined && result.lat_end !== undefined && result.lon_end !== undefined && result.geohash) {
@@ -68,7 +68,7 @@ function App() {
 
   const handleGeohashSubmit = async () => {
     try {
-      const result = await geohashActor.query_compute_area(geohash);
+      const result = await geohashActor.compute_area(geohash);
       setResponse(result);
       setError(null);
 

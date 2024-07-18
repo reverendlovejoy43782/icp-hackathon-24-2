@@ -15,9 +15,9 @@
         },
         "dip721": {
             "type": "rust",
-            "wasm": "dip721/target/wasm32-unknown-unknown/release/dip721_opt.wasm",
-            "candid": "dip721/src/dip721-nft-container.did",
-            "build": "cd dip721 && cargo build --target wasm32-unknown-unknown --release --target-dir target && ic-wasm target/wasm32-unknown-unknown/release/dip721_canister.wasm -o target/wasm32-unknown-unknown/release/dip721_opt.wasm shrink",
+            "wasm": "dip721_nft_container/target/wasm32-unknown-unknown/release/dip721_opt.wasm",
+            "candid": "dip721_nft_container/dip721-nft-container.did",
+            "build": "cd dip721_nft_container && cargo build --target wasm32-unknown-unknown --release --target-dir target && ic-wasm target/wasm32-unknown-unknown/release/dip721_canister.wasm -o target/wasm32-unknown-unknown/release/dip721_opt.wasm shrink",
             "package": "dip721_nft_container"
         },
         "nft-wallet": {

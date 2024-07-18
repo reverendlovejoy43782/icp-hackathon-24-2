@@ -21,7 +21,10 @@ use ic_cdk::{
     storage,
 };
 use ic_certified_map::Hash;
-use include_base64::include_base64;
+// not loading logo.png from file - therefore not needing this import
+//use include_base64::include_base64;
+
+
 
 mod http;
 
@@ -175,11 +178,22 @@ struct LogoResult {
 }
 
 #[export_name = "canister_query logoDip721"]
+// 
+fn logo() /* -> &'static LogoResult */
+{
+    ic_cdk::setup();
+    STATE.with(|state| call::reply((state.borrow().logo.as_ref().unwrap_or(&LogoResult {
+        data: Cow::Borrowed(""),
+        logo_type: Cow::Borrowed(""),
+    }),)))
+}
+/*
 fn logo() /* -> &'static LogoResult */
 {
     ic_cdk::setup();
     STATE.with(|state| call::reply((state.borrow().logo.as_ref().unwrap_or(&DEFAULT_LOGO),)))
 }
+*/
 
 #[query(name = "nameDip721")]
 fn name() -> String {
@@ -192,11 +206,12 @@ fn symbol() -> String {
 }
 
 
+/*
 const DEFAULT_LOGO: LogoResult = LogoResult {
-    data: Cow::Borrowed(include_base64!("logo.png")),
+    data: Cow::Borrowed(include_base64!("../dip721_nft_container/logo.png")),
     logo_type: Cow::Borrowed("image/png"),
 };
-
+*/
 
 #[query(name = "totalSupplyDip721")]
 fn total_supply() -> u64 {
