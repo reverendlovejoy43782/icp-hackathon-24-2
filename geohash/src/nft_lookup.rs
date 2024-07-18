@@ -6,20 +6,37 @@ use ic_cdk::api::call::call;
 use ic_cdk::export::candid::{CandidType, Deserialize, Principal};
 use std::cell::RefCell;
 use ic_cdk_macros::{post_upgrade, pre_upgrade};
+use std::collections::HashMap;
 // END IMPORTS AND PRAGMAS
 
 // START STRUCTS
+
 #[derive(CandidType, Deserialize, Clone, Debug)]
 pub struct Nft {
-    pub canister: Principal,
-    pub index: u64,
-    pub metadata: String,
+    pub owner: Principal,
+    pub token_id: u64,
+    pub metadata: MetadataDesc,
+    pub content: Vec<u8>,
 }
 
-#[derive(CandidType, Deserialize, Debug)]
-pub struct NftInfo {
-    pub nft_square: Vec<Nft>,
+#[derive(CandidType, Deserialize, Clone, Debug)]
+pub struct MetadataDesc {
+    pub purpose: String,
+    pub key_val_data: HashMap<String, MetadataVal>,
+    pub data: Vec<u8>,
 }
+
+#[derive(CandidType, Deserialize, Clone, Debug)]
+pub enum MetadataVal {
+    TextContent(String),
+    BlobContent(Vec<u8>),
+    NatContent(u128),
+    Nat8Content(u8),
+    Nat16Content(u16),
+    Nat32Content(u32),
+    Nat64Content(u64),
+}
+
 // END STRUCTS
 
 // START STATE
@@ -29,7 +46,7 @@ thread_local! {
 }
 
 // Function to set the canister ID from the init function in lib.rs
-pub fn init_canister_ids(dip721_canister_id: Principal) {
+pub fn init_canister_id(dip721_canister_id: Principal) {
     DIP721_CANISTER_ID.with(|id| *id.borrow_mut() = Some(dip721_canister_id));
 }
 
@@ -55,14 +72,16 @@ fn get_dip721_canister_id() -> Principal {
 
 // START FUNCTIONS
 
-/// Function to filter NFTs by geohash from the DIP721 canister
-pub async fn get_nfts_by_geohash_from_dip721(geohash: String) -> Result<NftInfo, String> {
+// Function to fetch metadata by token ID from the DIP721 canister
+pub async fn get_metadata_by_token_id(token_id: u64) -> Result<MetadataDesc, String> {
     let dip721_canister_id = get_dip721_canister_id();
-    ic_cdk::println!("Fetching NFTs for geohash: {} with dip721_canister_id: {:?}", geohash, dip721_canister_id);
-    let result: Result<(Vec<Nft>,), _> = call(dip721_canister_id, "getNftsByGeohash", (geohash,)).await;
+    ic_cdk::println!("Fetching metadata for token_id: {} with dip721_canister_id: {:?}", token_id, dip721_canister_id);
+    let result: Result<(MetadataDesc,), _> = call(dip721_canister_id, "getMetadataDip721", (token_id,)).await;
     match result {
-        Ok((nft_square,)) => Ok(NftInfo { nft_square }),
-        Err(err) => Err(format!("Failed to fetch NFTs from DIP721: {:?}", err)),
+        Ok((metadata,)) => Ok(metadata),
+        Err(err) => Err(format!("Failed to fetch metadata from DIP721: {:?}", err)),
     }
 }
+
+
 // END FUNCTIONS

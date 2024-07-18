@@ -7,7 +7,8 @@
 // START NFT functionality
 
 mod nft_lookup;
-use nft_lookup::{init_canister_ids, get_nfts_by_geohash_from_dip721, Nft};
+use nft_lookup::{init_canister_id, get_metadata_by_token_id, Nft};
+use crate::nft_lookup::MetadataDesc;
 
 
 // END NFT functionality
@@ -30,7 +31,6 @@ use ic_cdk::export::Principal;
 
 // START STRUCTS
 
-// Define a struct for geolocation with latitude and longitude
 #[derive(CandidType, Deserialize)]
 struct Geolocation {
     latitude: f64,
@@ -45,10 +45,25 @@ struct AreaResponse {
     lat_end: f64,
     lon_end: f64,
     geohash: String,
-    nft_square: Vec<Nft>, // New field for owned NFTs
+    nft_square: Option<Nft>,
 }
 
 // END STRUCTS
+
+
+// START HELPER FUNCTIONS
+
+fn metadata_to_nft(metadata: MetadataDesc, owner: Principal, token_id: u64, content: Vec<u8>) -> Nft {
+    Nft {
+        owner,
+        token_id,
+        metadata,
+        content,
+    }
+}
+
+// END HELPER FUNCTIONS
+
 
 // START FUNCTIONS
 
@@ -58,7 +73,7 @@ fn init() {
     let dip721_canister_id = "b77ix-eeaaa-aaaaa-qaada-cai";
     let dip721_canister_principal = Principal::from_text(dip721_canister_id)
         .expect("Invalid hardcoded DIP721_CANISTER_ID principal");
-    init_canister_ids(dip721_canister_principal);
+    init_canister_id(dip721_canister_principal);
     ic_cdk::println!("NFT_WALLET_CANISTER_ID and DIP721_CANISTER_ID hardcoded and loaded successfully.");
 }
 
@@ -72,9 +87,15 @@ async fn compute_geohash(geolocation: Geolocation) -> AreaResponse {
 
 
 
+    // Fetch NFT metadata by geohash (for testing purposes, using token_id 1)
+    let nft_square = get_metadata_by_token_id(1).await.ok().map(|metadata| {
+        metadata_to_nft(metadata, Principal::anonymous(), 1, vec![])
+    });
+
+    /*
     // Fetch NFTs by geohash from dip721 canister
     let nft_info_dip721 = get_nfts_by_geohash_from_dip721(nearest_geohash.clone()).await.unwrap_or_else(|_| nft_lookup::NftInfo { nft_square: Vec::new() });
-    
+    */
 
     // Return the matched square's area and the nearest geohash
     AreaResponse {
@@ -83,7 +104,8 @@ async fn compute_geohash(geolocation: Geolocation) -> AreaResponse {
         lat_end: bounds.lat_end,
         lon_end: bounds.lon_end,
         geohash: nearest_geohash,
-        nft_square: nft_info_dip721.nft_square, // Fetch owned NFTs
+        nft_square,
+        //nft_square: nft_info_dip721.nft_square, // Fetch owned NFTs
     }
     
 }
@@ -104,10 +126,15 @@ async fn compute_area(geohash: String) -> AreaResponse {
     // Calculate the grid and match the coordinates to the nearest grid square
     let (nearest_geohash, bounds) = find_nearest_geohash_with_bounds(coord.y, coord.x);
 
+    // Fetch NFT metadata by geohash (for testing purposes, using token_id 1)
+    let nft_square = get_metadata_by_token_id(1).await.ok().map(|metadata| {
+        metadata_to_nft(metadata, Principal::anonymous(), 1, vec![])
+    });
 
+    /*
     // Fetch NFTs by geohash from both canisters
     let nft_info_dip721 = get_nfts_by_geohash_from_dip721(nearest_geohash.clone()).await.unwrap_or_else(|_| nft_lookup::NftInfo { nft_square: Vec::new() });
-
+    */
     // Print the decoded coordinates and area
     /*
     ic_cdk::println!("LIB:RS_COMPUTE_AREA_Decoded coordinates: ({}, {})", coord.y, coord.x);
@@ -122,7 +149,8 @@ async fn compute_area(geohash: String) -> AreaResponse {
         lat_end: bounds.lat_end,
         lon_end: bounds.lon_end,
         geohash,
-        nft_square: nft_info_dip721.nft_square, // Fetch owned NFTs
+        nft_square,
+        //nft_square: nft_info_dip721.nft_square, // Fetch owned NFTs
     }
 }
 

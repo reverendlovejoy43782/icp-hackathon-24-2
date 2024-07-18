@@ -1,7 +1,29 @@
+type MetadataVal = variant {
+  TextContent: text;
+  BlobContent: blob;
+  NatContent: nat;
+  Nat8Content: nat8;
+  Nat16Content: nat16;
+  Nat32Content: nat32;
+  Nat64Content: nat64;
+};
+
+type KeyValRecord = record {
+  key: text;
+  val: MetadataVal;
+};
+
+type MetadataDesc = record {
+  purpose: text;
+  key_val_data: vec KeyValRecord;
+  data: blob;
+};
+
 type Nft = record {
-  canister: principal;
-  index: nat64;
-  metadata: text;
+  owner: principal;
+  token_id: nat64;
+  metadata: MetadataDesc;
+  content: blob;
 };
 
 type Geolocation = record { 
@@ -15,7 +37,7 @@ type AreaResponse = record {
   lat_end: float64;
   lon_end: float64;
   geohash: text;
-  nft_square: vec Nft; 
+  nft_square: opt Nft; 
 };
 
 service : {
