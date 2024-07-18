@@ -7,7 +7,12 @@
 // START NFT functionality
 
 mod nft_lookup;
-use nft_lookup::{init_canister_id, get_metadata_by_token_id, Nft};
+mod nft_mint;
+//use nft_lookup::{init_canister_id, get_metadata_by_token_id, Nft};
+
+use nft_lookup::{init_canister_id as init_lookup_id, get_metadata_by_token_id, Nft};
+use nft_mint::{init_canister_id as init_mint_id, mint_nft, SquareProperties, Wallet};
+
 use crate::nft_lookup::MetadataDesc;
 
 
@@ -73,11 +78,47 @@ fn init() {
     let dip721_canister_id = "b77ix-eeaaa-aaaaa-qaada-cai";
     let dip721_canister_principal = Principal::from_text(dip721_canister_id)
         .expect("Invalid hardcoded DIP721_CANISTER_ID principal");
-    init_canister_id(dip721_canister_principal);
+    init_lookup_id(dip721_canister_principal);
+    init_mint_id(dip721_canister_principal);
     ic_cdk::println!("NFT_WALLET_CANISTER_ID and DIP721_CANISTER_ID hardcoded and loaded successfully.");
 }
 
 
+
+#[pre_upgrade]
+fn pre_upgrade() {
+    nft_lookup::pre_upgrade();
+    nft_mint::pre_upgrade();
+}
+
+#[post_upgrade]
+fn post_upgrade() {
+    nft_lookup::post_upgrade();
+    nft_mint::post_upgrade();
+}
+
+// Function to mint an NFT with geohash
+#[update]
+async fn mint_nft_with_geohash(geolocation: Geolocation) -> Result<(), String> {
+    let (nearest_geohash, _) = find_nearest_geohash_with_bounds(geolocation.latitude, geolocation.longitude);
+
+    let wallet = Wallet {
+        ether: "0".to_string(),
+        usdc: "0".to_string(),
+        bitcoin: "0".to_string(),
+    };
+
+    let properties = SquareProperties {
+        geohash: nearest_geohash.clone(),
+        metadata: "Sample metadata".to_string(),
+        wallet,
+    };
+
+    let caller = ic_cdk::api::caller();
+    let blob_content = vec![];
+
+    mint_nft(caller, properties, blob_content).await.map(|_| ())
+}
 
 // Define an update function to compute the area and geohash for a given geolocation
 #[update]

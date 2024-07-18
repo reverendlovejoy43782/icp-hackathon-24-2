@@ -26,6 +26,18 @@ type Nft = record {
   content: blob;
 };
 
+type Wallet = record {
+  ether: text;
+  usdc: text;
+  bitcoin: text;
+};
+
+type SquareProperties = record {
+  geohash: text;
+  metadata: text;
+  wallet: Wallet;
+};
+
 type Geolocation = record { 
   latitude: float64; 
   longitude: float64; 
@@ -43,4 +55,5 @@ type AreaResponse = record {
 service : {
   compute_geohash: (Geolocation) -> (AreaResponse);
   compute_area: (text) -> (AreaResponse);
+  mint_nft_with_geohash: (Geolocation) -> (opt Nft);
 }

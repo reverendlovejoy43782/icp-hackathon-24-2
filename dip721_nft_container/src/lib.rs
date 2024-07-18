@@ -40,6 +40,8 @@ struct StableState {
     hashes: Vec<(String, Hash)>,
 }
 
+
+
 #[pre_upgrade]
 fn pre_upgrade() {
     let state = STATE.with(|state| mem::take(&mut *state.borrow_mut()));
@@ -385,13 +387,8 @@ fn is_approved_for_all(operator: Principal) -> bool {
 // mint interface
 // --------------
 
-#[derive(CandidType, Deserialize, Clone)]
-struct Wallet {
-    ether: String,
-    usdc: String,
-    bitcoin: String,
-}
 
+// Struct for nft info
 #[derive(CandidType, Deserialize, Clone)]
 struct SquareProperties {
     geohash: String,
@@ -399,6 +396,7 @@ struct SquareProperties {
     wallet: Wallet,
 }
 
+// mint the nft containing the square properties
 #[update(name = "mintDip721")]
 fn mint(
     to: Principal,
@@ -415,7 +413,7 @@ fn mint(
             owner: to,
             approved: None,
             id: new_id,
-            metadata: metadata_to_nft_metadata(metadata),
+            metadata: metadata_to_nft_metadata(metadata.clone()),
             content: blob_content,
         };
         state.nfts.push(nft);
@@ -428,22 +426,22 @@ fn mint(
     })
 }
 
+
+// Convert SquareProperties to MetadataDesc for NFT metadata
 fn metadata_to_nft_metadata(properties: SquareProperties) -> MetadataDesc {
-    vec![
-        MetadataPart {
-            purpose: MetadataPurpose::Rendered,
-            key_val_data: {
-                let mut map = HashMap::new();
-                map.insert("geohash".to_string(), MetadataVal::TextContent(properties.geohash));
-                map.insert("metadata".to_string(), MetadataVal::TextContent(properties.metadata));
-                map.insert("ether".to_string(), MetadataVal::TextContent(properties.wallet.ether));
-                map.insert("usdc".to_string(), MetadataVal::TextContent(properties.wallet.usdc));
-                map.insert("bitcoin".to_string(), MetadataVal::TextContent(properties.wallet.bitcoin));
-                map
-            },
-            data: vec![],
+    MetadataDesc {
+        purpose: "Rendered".to_string(),
+        key_val_data: {
+            let mut map = HashMap::new();
+            map.insert("geohash".to_string(), MetadataVal::TextContent(properties.geohash.clone()));
+            map.insert("metadata".to_string(), MetadataVal::TextContent(properties.metadata));
+            map.insert("ether".to_string(), MetadataVal::TextContent(properties.wallet.ether));
+            map.insert("usdc".to_string(), MetadataVal::TextContent(properties.wallet.usdc));
+            map.insert("bitcoin".to_string(), MetadataVal::TextContent(properties.wallet.bitcoin));
+            map
         },
-    ]
+        data: vec![],
+    }
 }
 
 /*
