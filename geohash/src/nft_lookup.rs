@@ -6,6 +6,8 @@ use ic_cdk::api::call::call;
 use ic_cdk::export::candid::{CandidType, Deserialize, Principal};
 use std::cell::RefCell;
 use std::collections::HashMap;
+use crate::types::{MetadataDesc, MetadataPart, MetadataPurpose, MetadataVal, MetadataResult}; // Import the common types
+
 // END IMPORTS AND PRAGMAS
 
 // START STRUCTS
@@ -18,23 +20,6 @@ pub struct Nft {
     pub content: Vec<u8>,
 }
 
-#[derive(CandidType, Deserialize, Clone, Debug)]
-pub struct MetadataDesc {
-    pub purpose: String,
-    pub key_val_data: HashMap<String, MetadataVal>,
-    pub data: Vec<u8>,
-}
-
-#[derive(CandidType, Deserialize, Clone, Debug)]
-pub enum MetadataVal {
-    TextContent(String),
-    BlobContent(Vec<u8>),
-    NatContent(u128),
-    Nat8Content(u8),
-    Nat16Content(u16),
-    Nat32Content(u32),
-    Nat64Content(u64),
-}
 
 // END STRUCTS
 
@@ -72,11 +57,16 @@ fn get_dip721_canister_id() -> Principal {
 // Function to fetch metadata by token ID from the DIP721 canister
 pub async fn get_metadata_by_token_id(token_id: u64) -> Result<MetadataDesc, String> {
     let dip721_canister_id = get_dip721_canister_id();
-    ic_cdk::println!("Fetching metadata for token_id: {} with dip721_canister_id: {:?}", token_id, dip721_canister_id);
-    let result: Result<(MetadataDesc,), _> = call(dip721_canister_id, "getMetadataDip721", (token_id,)).await;
+    let result: Result<(MetadataResult,), _> = call(
+        dip721_canister_id,
+        "getMetadataDip721",
+        (token_id,)
+    ).await;
+
     match result {
-        Ok((metadata,)) => Ok(metadata),
-        Err(err) => Err(format!("Failed to fetch metadata from DIP721: {:?}", err)),
+        Ok((MetadataResult::Ok(metadata),)) => Ok(metadata),
+        Ok((MetadataResult::Err(err),)) => Err(format!("Failed to get metadata: {:?}", err)),
+        Err(err) => Err(format!("Failed to get metadata from DIP721: {:?}", err)),
     }
 }
 

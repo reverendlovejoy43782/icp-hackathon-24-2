@@ -5,7 +5,10 @@
 use ic_cdk::api::call::call;
 use ic_cdk::export::candid::{CandidType, Deserialize, Principal};
 use std::cell::RefCell;
-use std::collections::HashMap; // Ensure this line is included
+use std::collections::HashMap;
+use crate::types::{MetadataDesc, MetadataPart, MetadataPurpose, MetadataVal, MetadataKeyVal, MetadataResult, ApiError}; // Import the common types
+
+
 // END IMPORTS AND PRAGMAS
 
 // START STRUCTS
@@ -27,31 +30,7 @@ pub struct SquareProperties {
 
 
 
-type MetadataDesc = Vec<MetadataPart>;
 
-#[derive(CandidType, Deserialize, Clone, Debug)]
-pub struct MetadataPart {
-    pub purpose: MetadataPurpose,
-    pub key_val_data: HashMap<String, MetadataVal>,
-    pub data: Vec<u8>,
-}
-
-#[derive(CandidType, Deserialize, Clone, Debug, PartialEq)]
-pub enum MetadataPurpose {
-    Preview,
-    Rendered,
-}
-
-#[derive(CandidType, Deserialize, Clone, Debug)]
-pub enum MetadataVal {
-    TextContent(String),
-    BlobContent(Vec<u8>),
-    NatContent(u128),
-    Nat8Content(u8),
-    Nat16Content(u16),
-    Nat32Content(u32),
-    Nat64Content(u64),
-}
 
 #[derive(CandidType, Deserialize)]
 pub enum MintReceipt {
@@ -62,13 +41,7 @@ pub enum MintReceipt {
     Err(ApiError),
 }
 
-#[derive(CandidType, Deserialize, Debug)]
-pub enum ApiError {
-    Unauthorized,
-    InvalidTokenId,
-    ZeroAddress,
-    Other,
-}
+
 
 
 #[derive(CandidType, Deserialize)]
@@ -76,6 +49,8 @@ struct MintResult {
     token_id: u64,
     id: u128,
 }
+
+
 // END STRUCTS
 
 // START STATE
@@ -144,13 +119,29 @@ pub fn set_dip721_canister_id(dip721_canister_id: Option<Principal>) {
 
 // Function to create metadata
 fn create_metadata(properties: SquareProperties) -> MetadataDesc {
-    let mut key_val_data = HashMap::new();
-    key_val_data.insert("geohash".to_string(), MetadataVal::TextContent(properties.geohash));
-    key_val_data.insert("metadata".to_string(), MetadataVal::TextContent(properties.metadata));
-    key_val_data.insert("ether".to_string(), MetadataVal::TextContent(properties.wallet.ether));
-    key_val_data.insert("usdc".to_string(), MetadataVal::TextContent(properties.wallet.usdc));
-    key_val_data.insert("bitcoin".to_string(), MetadataVal::TextContent(properties.wallet.bitcoin));
-    
+    let key_val_data = vec![
+        MetadataKeyVal {
+            key: "geohash".to_string(),
+            val: MetadataVal::TextContent(properties.geohash),
+        },
+        MetadataKeyVal {
+            key: "metadata".to_string(),
+            val: MetadataVal::TextContent(properties.metadata),
+        },
+        MetadataKeyVal {
+            key: "ether".to_string(),
+            val: MetadataVal::TextContent(properties.wallet.ether),
+        },
+        MetadataKeyVal {
+            key: "usdc".to_string(),
+            val: MetadataVal::TextContent(properties.wallet.usdc),
+        },
+        MetadataKeyVal {
+            key: "bitcoin".to_string(),
+            val: MetadataVal::TextContent(properties.wallet.bitcoin),
+        },
+    ];
+
     vec![MetadataPart {
         purpose: MetadataPurpose::Rendered,
         key_val_data,

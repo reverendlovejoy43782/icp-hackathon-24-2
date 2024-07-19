@@ -7,11 +7,13 @@
 
 mod nft_lookup;
 mod nft_mint;
+mod types;
 
 use nft_lookup::{init_canister_id as init_lookup_id, get_metadata_by_token_id, Nft};
 use nft_mint::{init_canister_id as init_mint_id, mint_nft, SquareProperties, Wallet, MintReceipt};
 
-use crate::nft_lookup::MetadataDesc;
+use crate::types::{MetadataDesc}; // Import the common types
+
 
 
 
@@ -87,7 +89,7 @@ fn metadata_to_nft(metadata: MetadataDesc, owner: Principal, token_id: u64, cont
 fn init() {
 
     // SET NFT_WALLET_CANISTER_ID AND DIP721_CANISTER_ID
-    let dip721_canister_id = "bkyz2-fmaaa-aaaaa-qaaaq-cai";
+    let dip721_canister_id = "bd3sg-teaaa-aaaaa-qaaba-cai";
     let dip721_canister_principal = Principal::from_text(dip721_canister_id)
         .expect("Invalid hardcoded DIP721_CANISTER_ID principal");
     init_lookup_id(dip721_canister_principal);
@@ -99,7 +101,7 @@ fn init() {
     GEOHASH_TO_TOKEN_ID.with(|map| *map.borrow_mut() = HashMap::new());
     nft_mint::set_dip721_canister_id(None);
 
-    let dip721_canister_id = "bkyz2-fmaaa-aaaaa-qaaaq-cai";
+    let dip721_canister_id = "bd3sg-teaaa-aaaaa-qaaba-cai";
     let dip721_canister_principal = Principal::from_text(dip721_canister_id)
         .expect("Invalid hardcoded DIP721_CANISTER_ID principal");
     init_lookup_id(dip721_canister_principal);
@@ -149,6 +151,7 @@ async fn mint_nft_with_geohash(geolocation: Geolocation) -> Option<Nft> {
     };
 
     let caller = ic_cdk::api::caller();
+    ic_cdk::println!("Caller principal: {:?}", caller); // Print the caller principal
     let blob_content = vec![];
 
     match mint_nft(caller, properties, blob_content).await {
