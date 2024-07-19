@@ -387,7 +387,7 @@ fn is_approved_for_all(operator: Principal) -> bool {
 // mint interface
 // --------------
 
-
+/*
 // Struct for nft info
 #[derive(CandidType, Deserialize, Clone)]
 struct SquareProperties {
@@ -443,8 +443,8 @@ fn metadata_to_nft_metadata(properties: SquareProperties) -> MetadataDesc {
         data: vec![],
     }
 }
+*/
 
-/*
 #[update(name = "mintDip721")]
 fn mint(
     to: Principal,
@@ -473,7 +473,7 @@ fn mint(
         token_id: tkid,
     })
 }
-*/
+
 
 // --------------
 // burn interface
