@@ -9,10 +9,10 @@ mod nft_lookup;
 mod nft_mint;
 mod types;
 
-use nft_lookup::{init_canister_id as init_lookup_id, get_metadata_by_token_id, Nft};
+use nft_lookup::{init_canister_id as init_lookup_id, get_metadata_by_token_id};
 use nft_mint::{init_canister_id as init_mint_id, mint_nft, create_metadata, SquareProperties, Wallet, MintReceipt};
 
-use crate::types::{MetadataDesc}; // Import the common types
+use crate::types::{MetadataDesc, Nft}; // Import the common types
 
 
 
@@ -44,7 +44,7 @@ struct Geolocation {
 }
 
 // Define a struct for area response to be used with Candid
-#[derive(CandidType, Deserialize)]
+#[derive(CandidType, Deserialize, Debug)]
 struct AreaResponse {
     lat_start: f64,
     lon_start: f64,
@@ -70,12 +70,15 @@ thread_local! {
 // START HELPER FUNCTIONS
 
 fn metadata_to_nft(metadata: MetadataDesc, owner: Principal, token_id: u64, content: Vec<u8>) -> Nft {
-    Nft {
+    ic_cdk::println!("Converting metadata to NFT. Metadata: {:?}", metadata);
+    let nft = Nft {
         owner,
         token_id,
-        metadata,
+        metadata: metadata.clone(),
         content,
-    }
+    };
+    ic_cdk::println!("Converting metadata to NFT. Metadata: {:?}", metadata);
+    nft
 }
 
 // END HELPER FUNCTIONS
@@ -169,13 +172,15 @@ async fn mint_nft_with_geohash(geolocation: Geolocation) -> Option<Nft> {
     let metadata = create_metadata(properties.clone());
     ic_cdk::println!("GEOHASH_LIB.RS_Metadata being sent: {:?}", metadata);
 
-    match mint_nft(caller, properties, blob_content).await {
+    let mint_result = match mint_nft(caller, properties, blob_content).await {
         Ok((txid, token_id)) => {
             match get_metadata_by_token_id(token_id).await {
                 Ok(metadata) => {
                     let nft = metadata_to_nft(metadata, caller, token_id, vec![]);
+                    ic_cdk::println!("GEOHASH_LIB.RS_NFT minted successfully with nft: {:?}", nft);
                     Some(nft)
                 },
+                
                 Err(err) => {
                     ic_cdk::println!("GEOHASH_LIB.RS_Failed to fetch metadata for token_id {}: {:?}", token_id, err);
                     None
@@ -186,7 +191,12 @@ async fn mint_nft_with_geohash(geolocation: Geolocation) -> Option<Nft> {
             ic_cdk::println!("GEOHASH_LIB.RS_Failed to mint NFT: {:?}", err);
             None
         },
-    }
+    };
+
+    // Log the final result before returning
+    ic_cdk::println!("GEOHASH_LIB.RS_Final result of mint_nft_with_geohash: {:?}", mint_result);
+
+    mint_result
 }
 /*
 #[update]
@@ -244,24 +254,43 @@ async fn compute_geohash(geolocation: Geolocation) -> AreaResponse {
 
     // Fetch NFT metadata by geohash (for testing purposes, using token_id 1)
     let nft_square = get_metadata_by_token_id(1).await.ok().map(|metadata| {
+        ic_cdk::println!("Converting metadata to NFT. Metadata: {:?}", metadata);
+        Nft {
+            owner: Principal::anonymous(),
+            token_id: 1,
+            metadata,
+            content: vec![],
+        }
+    });
+    ic_cdk::println!("GEOHASH_LIB:RS_COMPUTE_GEOHASH_NFT_SQUARE: {:?}", nft_square);
+    /*
+    // Fetch NFT metadata by geohash (for testing purposes, using token_id 1)
+    let nft_square = get_metadata_by_token_id(1).await.ok().map(|metadata| {
         metadata_to_nft(metadata, Principal::anonymous(), 1, vec![])
     });
-
+    ic_cdk::println!("GEOHASH_LIB:RS_COMPUTE_GEOHASH_NFT_SQUARE: {:?}", nft_square);
+    */
     /*
     // Fetch NFTs by geohash from dip721 canister
     let nft_info_dip721 = get_nfts_by_geohash_from_dip721(nearest_geohash.clone()).await.unwrap_or_else(|_| nft_lookup::NftInfo { nft_square: Vec::new() });
     */
 
     // Return the matched square's area and the nearest geohash
-    AreaResponse {
+    let response = AreaResponse {
         lat_start: bounds.lat_start,
         lon_start: bounds.lon_start,
         lat_end: bounds.lat_end,
         lon_end: bounds.lon_end,
         geohash: nearest_geohash,
         nft_square,
-        //nft_square: nft_info_dip721.nft_square, // Fetch owned NFTs
-    }
+        
+    };
+
+    // Print the AreaResponse
+    ic_cdk::println!("GEOHASH_LIB:RS_COMPUTE_GEOHASH_AreaResponse: {:?}", response);
+
+    response
+   
     
 }
 
@@ -285,6 +314,8 @@ async fn compute_area(geohash: String) -> AreaResponse {
     let nft_square = get_metadata_by_token_id(1).await.ok().map(|metadata| {
         metadata_to_nft(metadata, Principal::anonymous(), 1, vec![])
     });
+
+    ic_cdk::println!("GEOHASH_LIB:RS_COMPUTE_AREA_NFT_SQUARE: {:?}", nft_square);
 
     /*
     // Fetch NFTs by geohash from both canisters

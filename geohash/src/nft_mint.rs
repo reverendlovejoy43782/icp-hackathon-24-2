@@ -116,7 +116,7 @@ pub fn set_dip721_canister_id(dip721_canister_id: Option<Principal>) {
 }
 
 
-// Function to create metadata
+// Create metadata for the NFT
 pub fn create_metadata(properties: SquareProperties) -> MetadataDesc {
     let mut key_val_data = HashMap::new();
     key_val_data.insert("geohash".to_string(), MetadataVal::TextContent(properties.geohash));
@@ -125,12 +125,17 @@ pub fn create_metadata(properties: SquareProperties) -> MetadataDesc {
     key_val_data.insert("usdc".to_string(), MetadataVal::TextContent(properties.wallet.usdc));
     key_val_data.insert("bitcoin".to_string(), MetadataVal::TextContent(properties.wallet.bitcoin));
 
-    vec![MetadataPart {
+    let metadata_print = vec![MetadataPart {
         purpose: MetadataPurpose::Rendered,
         key_val_data, // This is now a HashMap
         data: vec![], // Use an empty blob as appropriate
-    }]
+    }];
+
+    ic_cdk::println!("GEOHASH_NFT_MINT_Created metadata: {:?}", metadata_print);
+
+    metadata_print
 }
+
 
 
 // END HELPER FUNCTIONS

@@ -14,7 +14,7 @@ type MetadataKeyVal = record {
 };
 type MetadataPart = record {
     purpose: MetadataPurpose;
-    key_val_data: vec record { key: text; val: MetadataVal };  // Change to HashMap-like structure
+    key_val_data: vec MetadataKeyVal;
     data: blob;
 };
 type MetadataDesc = vec MetadataPart;
