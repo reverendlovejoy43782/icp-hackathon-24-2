@@ -10,7 +10,7 @@ mod nft_mint;
 mod types;
 
 use nft_lookup::{init_canister_id as init_lookup_id, get_metadata_by_token_id, Nft};
-use nft_mint::{init_canister_id as init_mint_id, mint_nft, SquareProperties, Wallet, MintReceipt};
+use nft_mint::{init_canister_id as init_mint_id, mint_nft, create_metadata, SquareProperties, Wallet, MintReceipt};
 
 use crate::types::{MetadataDesc}; // Import the common types
 
@@ -89,7 +89,7 @@ fn metadata_to_nft(metadata: MetadataDesc, owner: Principal, token_id: u64, cont
 fn init() {
 
     // SET NFT_WALLET_CANISTER_ID AND DIP721_CANISTER_ID
-    let dip721_canister_id = "bd3sg-teaaa-aaaaa-qaaba-cai";
+    let dip721_canister_id = "bkyz2-fmaaa-aaaaa-qaaaq-cai";
     let dip721_canister_principal = Principal::from_text(dip721_canister_id)
         .expect("Invalid hardcoded DIP721_CANISTER_ID principal");
     init_lookup_id(dip721_canister_principal);
@@ -101,7 +101,7 @@ fn init() {
     GEOHASH_TO_TOKEN_ID.with(|map| *map.borrow_mut() = HashMap::new());
     nft_mint::set_dip721_canister_id(None);
 
-    let dip721_canister_id = "bd3sg-teaaa-aaaaa-qaaba-cai";
+    let dip721_canister_id = "bkyz2-fmaaa-aaaaa-qaaaq-cai";
     let dip721_canister_principal = Principal::from_text(dip721_canister_id)
         .expect("Invalid hardcoded DIP721_CANISTER_ID principal");
     init_lookup_id(dip721_canister_principal);
@@ -151,8 +151,23 @@ async fn mint_nft_with_geohash(geolocation: Geolocation) -> Option<Nft> {
     };
 
     let caller = ic_cdk::api::caller();
-    ic_cdk::println!("Caller principal: {:?}", caller); // Print the caller principal
+    /*
+    if caller == Principal::anonymous() {
+        ic_cdk::println!("Invalid principal: {:?}", caller);
+        return None;
+    }
+    */
+    ic_cdk::println!("GEOHASH_LIB.RS_Caller principal: {:?}", caller);
+
     let blob_content = vec![];
+
+    // Log properties and metadata
+    ic_cdk::println!("GEOHASH_LIB.RS_Geohash: {:?}", nearest_geohash);
+    ic_cdk::println!("GEOHASH_LIB.RS_Properties: {:?}", properties);
+
+    // Log the created metadata
+    let metadata = create_metadata(properties.clone());
+    ic_cdk::println!("GEOHASH_LIB.RS_Metadata being sent: {:?}", metadata);
 
     match mint_nft(caller, properties, blob_content).await {
         Ok((txid, token_id)) => {
@@ -162,13 +177,13 @@ async fn mint_nft_with_geohash(geolocation: Geolocation) -> Option<Nft> {
                     Some(nft)
                 },
                 Err(err) => {
-                    ic_cdk::println!("Failed to fetch metadata for token_id {}: {:?}", token_id, err);
+                    ic_cdk::println!("GEOHASH_LIB.RS_Failed to fetch metadata for token_id {}: {:?}", token_id, err);
                     None
                 }
             }
         },
         Err(err) => {
-            ic_cdk::println!("Failed to mint NFT: {:?}", err);
+            ic_cdk::println!("GEOHASH_LIB.RS_Failed to mint NFT: {:?}", err);
             None
         },
     }

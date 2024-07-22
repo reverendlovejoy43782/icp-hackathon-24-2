@@ -1,6 +1,6 @@
 type MetadataVal = variant {
     TextContent: text;
-    BlobContent: vec nat8;
+    BlobContent: blob;
     NatContent: nat;
     Nat8Content: nat8;
     Nat16Content: nat16;
@@ -8,10 +8,14 @@ type MetadataVal = variant {
     Nat64Content: nat64;
 };
 type MetadataPurpose = variant { Preview; Rendered };
+type MetadataKeyVal = record {
+    key: text;
+    val: MetadataVal;
+};
 type MetadataPart = record {
     purpose: MetadataPurpose;
-    key_val_data: vec record { key: text; val: MetadataVal };
-    data: vec nat8;
+    key_val_data: vec record { key: text; val: MetadataVal };  // Change to HashMap-like structure
+    data: blob;
 };
 type MetadataDesc = vec MetadataPart;
 type Nft = record {

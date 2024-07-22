@@ -173,7 +173,7 @@ fn supported_interfaces() -> &'static [InterfaceId] {
     ]
 }
 
-#[derive(CandidType, Deserialize, Clone)]
+#[derive(CandidType, Deserialize, Clone, Debug)]
 struct LogoResult {
     logo_type: Cow<'static, str>,
     data: Cow<'static, str>,
@@ -451,6 +451,54 @@ fn mint(
     metadata: MetadataDesc,
     blob_content: Vec<u8>,
 ) -> Result<MintResult, ConstrainedError> {
+    ic_cdk::println!("DIP_721_mintDip721 called");
+    ic_cdk::println!("DIP_721_Recipient principal: {:?}", to);
+    ic_cdk::println!("DIP_721_Metadata: {:?}", metadata);
+    ic_cdk::println!("DIP_721_Blob content: {:?}", blob_content);
+
+    let (txid, tkid) = STATE.with(|state| {
+        let mut state = state.borrow_mut();
+        
+        ic_cdk::println!("DIP_721_Current state: {:?}", state);
+
+        if !state.custodians.contains(&api::caller()) {
+            ic_cdk::println!("DIP_721_Unauthorized caller: {:?}", api::caller());
+            return Err(ConstrainedError::Unauthorized);
+        }
+
+        let new_id = state.nfts.len() as u64;
+        ic_cdk::println!("DIP_721_New NFT ID: {}", new_id);
+
+        let nft = Nft {
+            owner: to,
+            approved: None,
+            id: new_id,
+            metadata: metadata.clone(), // Cloning to ensure original is untouched
+            content: blob_content.clone(),
+        };
+
+        ic_cdk::println!("DIP_721_New NFT: {:?}", nft);
+
+        state.nfts.push(nft);
+        Ok((state.next_txid(), new_id))
+    })?;
+
+    http::add_hash(tkid);
+
+    ic_cdk::println!("DIP_721_Transaction ID: {}, Token ID: {}", txid, tkid);
+
+    Ok(MintResult {
+        id: txid,
+        token_id: tkid,
+    })
+}
+/*
+#[update(name = "mintDip721")]
+fn mint(
+    to: Principal,
+    metadata: MetadataDesc,
+    blob_content: Vec<u8>,
+) -> Result<MintResult, ConstrainedError> {
     let (txid, tkid) = STATE.with(|state| {
         let mut state = state.borrow_mut();
         if !state.custodians.contains(&api::caller()) {
@@ -473,7 +521,7 @@ fn mint(
         token_id: tkid,
     })
 }
-
+*/
 
 // --------------
 // burn interface
@@ -496,7 +544,7 @@ fn burn(token_id: u64) -> Result {
     })
 }
 
-#[derive(CandidType, Deserialize, Default)]
+#[derive(CandidType, Deserialize, Default, Debug)]
 struct State {
     nfts: Vec<Nft>,
     custodians: HashSet<Principal>,
@@ -507,7 +555,7 @@ struct State {
     txid: u128,
 }
 
-#[derive(CandidType, Deserialize)]
+#[derive(CandidType, Deserialize, Debug)]
 struct Nft {
     owner: Principal,
     approved: Option<Principal>,
@@ -519,14 +567,14 @@ struct Nft {
 type MetadataDesc = Vec<MetadataPart>;
 type MetadataDescRef<'a> = &'a [MetadataPart];
 
-#[derive(CandidType, Deserialize)]
+#[derive(CandidType, Deserialize, Clone, Debug)]
 struct MetadataPart {
     purpose: MetadataPurpose,
     key_val_data: HashMap<String, MetadataVal>,
     data: Vec<u8>,
 }
 
-#[derive(CandidType, Deserialize, PartialEq)]
+#[derive(CandidType, Deserialize, PartialEq, Clone, Debug)]
 enum MetadataPurpose {
     Preview,
     Rendered,
@@ -539,7 +587,7 @@ struct MintResult {
 }
 
 #[allow(clippy::enum_variant_names)]
-#[derive(CandidType, Deserialize)]
+#[derive(CandidType, Deserialize, Clone, Debug)]
 enum MetadataVal {
     TextContent(String),
     BlobContent(Vec<u8>),

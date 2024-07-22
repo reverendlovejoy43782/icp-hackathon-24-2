@@ -3,11 +3,10 @@
 
 // START IMPORTS AND PRAGMAS
 use ic_cdk::api::call::call;
-use ic_cdk::export::candid::{CandidType, Deserialize, Principal};
+use ic_cdk::export::candid::{CandidType, Deserialize, Principal, encode_args};
 use std::cell::RefCell;
 use std::collections::HashMap;
 use crate::types::{MetadataDesc, MetadataPart, MetadataPurpose, MetadataVal, MetadataKeyVal, MetadataResult, ApiError}; // Import the common types
-
 
 // END IMPORTS AND PRAGMAS
 
@@ -32,7 +31,7 @@ pub struct SquareProperties {
 
 
 
-#[derive(CandidType, Deserialize)]
+#[derive(CandidType, Deserialize, Debug)]
 pub enum MintReceipt {
     Ok {
         token_id: u64,
@@ -118,34 +117,18 @@ pub fn set_dip721_canister_id(dip721_canister_id: Option<Principal>) {
 
 
 // Function to create metadata
-fn create_metadata(properties: SquareProperties) -> MetadataDesc {
-    let key_val_data = vec![
-        MetadataKeyVal {
-            key: "geohash".to_string(),
-            val: MetadataVal::TextContent(properties.geohash),
-        },
-        MetadataKeyVal {
-            key: "metadata".to_string(),
-            val: MetadataVal::TextContent(properties.metadata),
-        },
-        MetadataKeyVal {
-            key: "ether".to_string(),
-            val: MetadataVal::TextContent(properties.wallet.ether),
-        },
-        MetadataKeyVal {
-            key: "usdc".to_string(),
-            val: MetadataVal::TextContent(properties.wallet.usdc),
-        },
-        MetadataKeyVal {
-            key: "bitcoin".to_string(),
-            val: MetadataVal::TextContent(properties.wallet.bitcoin),
-        },
-    ];
+pub fn create_metadata(properties: SquareProperties) -> MetadataDesc {
+    let mut key_val_data = HashMap::new();
+    key_val_data.insert("geohash".to_string(), MetadataVal::TextContent(properties.geohash));
+    key_val_data.insert("metadata".to_string(), MetadataVal::TextContent(properties.metadata));
+    key_val_data.insert("ether".to_string(), MetadataVal::TextContent(properties.wallet.ether));
+    key_val_data.insert("usdc".to_string(), MetadataVal::TextContent(properties.wallet.usdc));
+    key_val_data.insert("bitcoin".to_string(), MetadataVal::TextContent(properties.wallet.bitcoin));
 
     vec![MetadataPart {
         purpose: MetadataPurpose::Rendered,
-        key_val_data,
-        data: vec![],
+        key_val_data, // This is now a HashMap
+        data: vec![], // Use an empty blob as appropriate
     }]
 }
 
@@ -161,11 +144,16 @@ pub async fn mint_nft(
     blob_content: Vec<u8>,
 ) -> Result<(u128, u64), String> {
     let dip721_canister_id = get_dip721_canister_id();
-    ic_cdk::println!("Minting NFT with dip721_canister_id: {:?}", dip721_canister_id);
+    ic_cdk::println!("GEOHASH_NFT_MINT_Minting NFT with dip721_canister_id: {:?}", dip721_canister_id);
 
     let geohash_clone = properties.geohash.clone(); // Clone the geohash before moving properties
 
     let metadata = create_metadata(properties);
+    ic_cdk::println!("GEOHASH_NFT_MINT_Metadata being sent: {:?}", metadata); // Log
+
+    // Encode arguments and log them
+    let encoded_args = encode_args((to, metadata.clone(), blob_content.clone())).unwrap();
+    ic_cdk::println!("GEOHASH_NFT_MINT_Encoded arguments: {:?}", encoded_args);
 
     let result: Result<(MintReceipt,), _> = call(
         dip721_canister_id,
@@ -173,15 +161,18 @@ pub async fn mint_nft(
         (to, metadata, blob_content),
     ).await;
 
+    // Log the result of the call
+    ic_cdk::println!("GEOHASH_NFT_MINT_Result of mintDip721 call: {:?}", result);
+
     match result {
         Ok((mint_result,)) => match mint_result {
             MintReceipt::Ok { id, token_id } => {
                 update_geohash_to_token_id(geohash_clone, token_id); // Use the cloned geohash
                 Ok((id, token_id))
             },
-            MintReceipt::Err(api_error) => Err(format!("Failed to mint NFT: {:?}", api_error)),
+            MintReceipt::Err(api_error) => Err(format!("GEOHASH_NFT_MINT_Failed to mint NFT: {:?}", api_error)),
         },
-        Err(err) => Err(format!("Failed to mint NFT: {:?}", err)),
+        Err(err) => Err(format!("GEOHASH_NFT_MINT_Failed to mint NFT: {:?}", err)),
     }
 }
 
