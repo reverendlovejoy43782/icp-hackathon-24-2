@@ -1,60 +1,39 @@
 // SPDX-License-Identifier: MIT
 // (C) 2024 Thomas Magerl
 
-
 // START IMPORTS AND PRAGMAS
 
-
-mod nft_lookup;
-mod nft_mint;
+// Modules
 mod types;
-
-use nft_lookup::{init_canister_id as init_lookup_id, get_metadata_by_token_id};
-use nft_mint::{init_canister_id as init_mint_id, mint_nft, create_metadata, SquareProperties, Wallet, MintReceipt};
-
-use crate::types::{MetadataDesc, Nft}; // Import the common types
-
-
-
-
-
+mod nft_mint;
+mod nft_lookup;
 mod area_generator;
 mod grid_generator;
 mod grid_match;
 
+// IC-Related Imports
 use ic_cdk::export::candid::{CandidType, Deserialize};
+use ic_cdk::export::Principal;
 use ic_cdk_macros::*;
+
+// Types
+use crate::types::{Geolocation, AreaResponse, MetadataDesc, Nft, SquareProperties, MintReceipt, Wallet};
+
+// Functions from nft_mint
+use nft_mint::{init_canister_id as init_mint_id, print_geohash_to_token_id_map, mint_nft, create_metadata};
+
+// Functions from nft_lookup
+use nft_lookup::{init_canister_id as init_lookup_id, get_metadata_by_token_id, get_nft_by_geohash};
+
+// Functions from grid_match and grid_generator
 use grid_match::find_nearest_geohash_with_bounds;
 use grid_generator::decode_geohash;
-//use dotenvy::dotenv;
-//use std::env;
+
+// Standard Library Imports
 use std::cell::RefCell;
 use std::collections::HashMap;
-use ic_cdk::export::Principal;
 
 // END IMPORTS AND PRAGMAS
-
-
-// START STRUCTS
-
-#[derive(CandidType, Deserialize, Debug)]
-struct Geolocation {
-    latitude: f64,
-    longitude: f64,
-}
-
-// Define a struct for area response to be used with Candid
-#[derive(CandidType, Deserialize, Debug)]
-struct AreaResponse {
-    lat_start: f64,
-    lon_start: f64,
-    lat_end: f64,
-    lon_end: f64,
-    geohash: String,
-    nft_square: Option<Nft>,
-}
-
-// END STRUCTS
 
 
 // START LOCAL STORAGE
@@ -69,6 +48,7 @@ thread_local! {
 
 // START HELPER FUNCTIONS
 
+/*
 fn metadata_to_nft(metadata: MetadataDesc, owner: Principal, token_id: u64, content: Vec<u8>) -> Nft {
     ic_cdk::println!("Converting metadata to NFT. Metadata: {:?}", metadata);
     let nft = Nft {
@@ -80,6 +60,7 @@ fn metadata_to_nft(metadata: MetadataDesc, owner: Principal, token_id: u64, cont
     ic_cdk::println!("Converting metadata to NFT. Metadata: {:?}", metadata);
     nft
 }
+*/
 
 // END HELPER FUNCTIONS
 
@@ -136,7 +117,118 @@ fn post_upgrade() {
     GEOHASH_TO_TOKEN_ID.with(|map| *map.borrow_mut() = geohash_to_token_id.into_iter().collect());
 }
 
+
+
+// START METHODS
+
+// Function to print the geohash-to-token ID map
+#[update]
+fn print_geohash_map() {
+    print_geohash_to_token_id_map();
+}
+
+
+
+// New method to get NFT by geohash
+#[update]
+async fn get_nft_by_geohash_method(geohash: String) -> Option<Nft> {
+    match get_nft_by_geohash(geohash).await {
+        Ok(nft) => Some(nft),
+        Err(err) => {
+            ic_cdk::println!("Failed to get NFT by geohash: {:?}", err);
+            None
+        }
+    }
+}
+
 // Function to mint an NFT with geohash
+#[update]
+async fn mint_nft_with_geohash(geolocation: Geolocation) -> Option<Nft> {
+    // Find the nearest geohash based on the provided geolocation
+    let (nearest_geohash, _) = find_nearest_geohash_with_bounds(geolocation.latitude, geolocation.longitude);
+
+    // Create SquareProperties with the nearest geohash, without wallet information
+    let properties = SquareProperties {
+        geohash: nearest_geohash.clone(),
+        metadata: "".to_string(), // Empty metadata, as we only want to store geohash
+    };
+
+    // Get the principal of the caller
+    let caller = ic_cdk::api::caller();
+
+    /*
+    // Check if the caller is anonymous (optional)
+    if caller == Principal::anonymous() {
+        ic_cdk::println!("Invalid principal: {:?}", caller);
+        return None;
+    }
+    */
+    ic_cdk::println!("GEOHASH_LIB.RS_Caller principal: {:?}", caller);
+
+    // Empty content for the blob (no additional data)
+    let blob_content = vec![];
+
+    // Log the geohash and properties for debugging purposes
+    ic_cdk::println!("GEOHASH_LIB.RS_Geohash: {:?}", nearest_geohash);
+    ic_cdk::println!("GEOHASH_LIB.RS_Properties: {:?}", properties);
+
+    // Create metadata containing only the geohash
+    let metadata = create_metadata(properties.clone());
+    ic_cdk::println!("GEOHASH_LIB.RS_Metadata being sent: {:?}", metadata);
+
+    // Attempt to mint the NFT
+
+    // Attempt to mint the NFT
+    let mint_result = match mint_nft(caller, properties, blob_content).await {
+        Ok((txid, token_id)) => {
+            // Replace fetching metadata with a constant NFT for testing
+            let nft = Nft {
+                owner: caller,
+                token_id,
+                metadata: vec![], // Assuming an empty metadata for testing
+                content: vec![], // Empty content for testing
+            };
+            ic_cdk::println!("GEOHASH_LIB.RS_NFT minted successfully with nft: {:?}", nft);
+            Some(nft)
+        },
+        Err(err) => {
+            // Handle error minting NFT
+            ic_cdk::println!("GEOHASH_LIB.RS_Failed to mint NFT: {:?}", err);
+            None
+        },
+    };
+    /*
+    let mint_result = match mint_nft(caller, properties, blob_content).await {
+        Ok((txid, token_id)) => {
+            // Fetch metadata for the minted token
+            match get_metadata_by_token_id(token_id).await {
+                Ok(metadata) => {
+                    // Convert metadata to NFT format
+                    let nft = metadata_to_nft(metadata, caller, token_id, vec![]);
+                    ic_cdk::println!("GEOHASH_LIB.RS_NFT minted successfully with nft: {:?}", nft);
+                    Some(nft)
+                },
+                Err(err) => {
+                    // Handle error fetching metadata
+                    ic_cdk::println!("GEOHASH_LIB.RS_Failed to fetch metadata for token_id {}: {:?}", token_id, err);
+                    None
+                }
+            }
+        },
+        Err(err) => {
+            // Handle error minting NFT
+            ic_cdk::println!("GEOHASH_LIB.RS_Failed to mint NFT: {:?}", err);
+            None
+        },
+    };
+    */
+    // Log the final result before returning
+    ic_cdk::println!("GEOHASH_LIB.RS_Final result of mint_nft_with_geohash: {:?}", mint_result);
+
+    mint_result
+}
+
+/*
 #[update]
 async fn mint_nft_with_geohash(geolocation: Geolocation) -> Option<Nft> {
     let (nearest_geohash, _) = find_nearest_geohash_with_bounds(geolocation.latitude, geolocation.longitude);
@@ -154,6 +246,7 @@ async fn mint_nft_with_geohash(geolocation: Geolocation) -> Option<Nft> {
     };
 
     let caller = ic_cdk::api::caller();
+
     /*
     if caller == Principal::anonymous() {
         ic_cdk::println!("Invalid principal: {:?}", caller);
@@ -198,6 +291,7 @@ async fn mint_nft_with_geohash(geolocation: Geolocation) -> Option<Nft> {
 
     mint_result
 }
+*/
 /*
 #[update]
 async fn mint_nft_with_geohash(geolocation: Geolocation) -> Option<Nft> {
@@ -250,19 +344,17 @@ async fn compute_geohash(geolocation: Geolocation) -> AreaResponse {
     // Calculate the grid and match the geolocation to the nearest grid square
     let (nearest_geohash, bounds) = find_nearest_geohash_with_bounds(geolocation.latitude, geolocation.longitude);
 
-
-
-    // Fetch NFT metadata by geohash (for testing purposes, using token_id 1)
-    let nft_square = get_metadata_by_token_id(1).await.ok().map(|metadata| {
-        ic_cdk::println!("Converting metadata to NFT. Metadata: {:?}", metadata);
-        Nft {
-            owner: Principal::anonymous(),
-            token_id: 1,
-            metadata,
-            content: vec![],
-        }
+    
+    // Use constants for testing purposes
+    let metadata = vec![]; // Assuming an empty metadata for testing
+    let nft_square = Some(Nft {
+        owner: Principal::anonymous(),
+        token_id: 1,
+        metadata,
+        content: vec![],
     });
     ic_cdk::println!("GEOHASH_LIB:RS_COMPUTE_GEOHASH_NFT_SQUARE: {:?}", nft_square);
+    
     /*
     // Fetch NFT metadata by geohash (for testing purposes, using token_id 1)
     let nft_square = get_metadata_by_token_id(1).await.ok().map(|metadata| {
@@ -310,13 +402,18 @@ async fn compute_area(geohash: String) -> AreaResponse {
     // Calculate the grid and match the coordinates to the nearest grid square
     let (nearest_geohash, bounds) = find_nearest_geohash_with_bounds(coord.y, coord.x);
 
-    // Fetch NFT metadata by geohash (for testing purposes, using token_id 1)
-    let nft_square = get_metadata_by_token_id(1).await.ok().map(|metadata| {
-        metadata_to_nft(metadata, Principal::anonymous(), 1, vec![])
+    
+    // Use constants for testing purposes
+    let metadata = vec![]; // Assuming an empty metadata for testing
+    let nft_square = Some(Nft {
+        owner: Principal::anonymous(),
+        token_id: 1,
+        metadata,
+        content: vec![],
     });
 
     ic_cdk::println!("GEOHASH_LIB:RS_COMPUTE_AREA_NFT_SQUARE: {:?}", nft_square);
-
+    
     /*
     // Fetch NFTs by geohash from both canisters
     let nft_info_dip721 = get_nfts_by_geohash_from_dip721(nearest_geohash.clone()).await.unwrap_or_else(|_| nft_lookup::NftInfo { nft_square: Vec::new() });
@@ -341,7 +438,7 @@ async fn compute_area(geohash: String) -> AreaResponse {
 }
 
 
-// END FUNCTIONS
+// END METHODS
 
 
 // Include the tests module for unit tests

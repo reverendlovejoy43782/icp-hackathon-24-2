@@ -17,11 +17,21 @@ type MetadataPart = record {
     key_val_data: vec MetadataKeyVal;
     data: blob;
 };
+
+
+type MetadataLookupPart = record {
+    purpose: MetadataPurpose;
+    key_val_data: vec MetadataKeyVal;
+    data: blob;
+};
+
+type MetadataLookupDesc = vec MetadataLookupPart;
+
 type MetadataDesc = vec MetadataPart;
 type Nft = record {
     owner: principal;
     token_id: nat64;
-    metadata: MetadataDesc;
+    metadata: MetadataLookupDesc;
     content: vec nat8;
 };
 type Wallet = record {
@@ -50,4 +60,6 @@ service : {
     compute_geohash: (Geolocation) -> (AreaResponse);
     compute_area: (text) -> (AreaResponse);
     mint_nft_with_geohash: (Geolocation) -> (opt Nft);
+    print_geohash_map: () -> ();
+    get_nft_by_geohash_method: (text) -> (opt Nft);
 }

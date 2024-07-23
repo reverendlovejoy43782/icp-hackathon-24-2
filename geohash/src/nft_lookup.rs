@@ -6,16 +6,12 @@ use ic_cdk::api::call::call;
 use ic_cdk::export::candid::{CandidType, Deserialize, Principal};
 use std::cell::RefCell;
 use std::collections::HashMap;
-use crate::types::{MetadataDesc, MetadataPart, MetadataPurpose, MetadataVal, MetadataResult, MetadataKeyVal, Nft}; // Import the common types
+use crate::types::{MetadataDesc, Nft, MetadataPart, MetadataPartLookup, MetadataPurpose, MetadataVal, MetadataKeyVal, MetadataResult};
+use crate::nft_mint::get_token_id_by_geohash;
+
 
 // END IMPORTS AND PRAGMAS
 
-// START STRUCTS
-/*
-moved to types.rs
-*/
-
-// END STRUCTS
 
 // START STATE
 
@@ -48,20 +44,15 @@ fn get_dip721_canister_id() -> Principal {
 
 // START HELPER FUNCTIONS
 
-// Function to convert a vector of MetadataKeyVal to a HashMap
-fn vec_to_hashmap(vec: Vec<MetadataKeyVal>) -> HashMap<String, MetadataVal> {
-    vec.into_iter().map(|kv| (kv.key, kv.val)).collect()
-}
 
-// Function to convert a HashMap to a vector of MetadataKeyVal
-fn hashmap_to_vec(hashmap: HashMap<String, MetadataVal>) -> Vec<MetadataKeyVal> {
-    hashmap.into_iter().map(|(key, val)| MetadataKeyVal { key, val }).collect()
-}
 
 // END HELPER FUNCTIONS
 
 
 // START FUNCTIONS
+
+
+// Integration in get_metadata_by_token_id
 
 pub async fn get_metadata_by_token_id(token_id: u64) -> Result<MetadataDesc, String> {
     let dip721_canister_id = get_dip721_canister_id();
@@ -89,4 +80,63 @@ pub async fn get_metadata_by_token_id(token_id: u64) -> Result<MetadataDesc, Str
     }
 }
 
+
+
+pub async fn get_nft_by_geohash(geohash: String) -> Result<Nft, String> {
+    // Get the token ID from the geohash-to-token ID mapping
+    let token_id = match get_token_id_by_geohash(&geohash) {
+        Some(id) => id,
+        None => return Err(format!("No token ID found for geohash: {}", geohash)),
+    };
+
+    // Get the metadata by token ID
+    let dip721_canister_id = get_dip721_canister_id();
+    let result: Result<(MetadataResult,), _> = call(
+        dip721_canister_id,
+        "getMetadataDip721",
+        (token_id,)
+    ).await;
+
+    ic_cdk::println!("GEOHASH_NFT_LOOKUP_metadata_result: {:?}", result);
+
+    let metadata_parts = match result {
+        Ok((MetadataResult::Ok(metadata),)) => {
+            ic_cdk::println!("GEOHASH_NFT_LOOKUP_Metadata_OK: {:?}", metadata);
+            metadata
+        },
+        Ok((MetadataResult::Err(err),)) => {
+            ic_cdk::println!("GEOHASH_NFT_LOOKUP_Metadata_ERR: {:?}", err);
+            return Err(format!("Failed to get metadata: {:?}", err));
+        },
+        Err(err) => {
+            ic_cdk::println!("GEOHASH_NFT_LOOKUP_DIP721_ERR: {:?}", err);
+            return Err(format!("Failed to get metadata from DIP721: {:?}", err));
+        },
+    };
+
+
+    // Convert HashMap<String, MetadataVal> to Vec<MetadataKeyVal> for MetadataLookupPart
+    let metadata: Vec<MetadataPartLookup> = metadata_parts.into_iter().map(|part| MetadataPartLookup {
+        purpose: part.purpose,
+        key_val_data: part.key_val_data.into_iter().map(|(key, val)| MetadataKeyVal {
+            key,
+            val,
+        }).collect(),
+        data: part.data,
+    }).collect();
+
+    // Placeholder for owner and content retrieval logic
+    let owner = Principal::anonymous(); // Replace with actual owner retrieval logic if available
+    let content = vec![]; // Replace with actual content retrieval logic if available
+
+    
+    
+    // Construct the Nft object
+    Ok(Nft {
+        owner,
+        token_id,
+        metadata,
+        content,
+    })
+}
 

@@ -6,51 +6,10 @@ use ic_cdk::api::call::call;
 use ic_cdk::export::candid::{CandidType, Deserialize, Principal, encode_args};
 use std::cell::RefCell;
 use std::collections::HashMap;
-use crate::types::{MetadataDesc, MetadataPart, MetadataPurpose, MetadataVal, MetadataKeyVal, MetadataResult, ApiError}; // Import the common types
+use crate::types::{MetadataDesc, MetadataPart, MetadataPurpose, MetadataVal, MetadataKeyVal, MetadataResult, ApiError, SquareProperties, Wallet, MintReceipt, MintResult}; // Import the common types
 
 // END IMPORTS AND PRAGMAS
 
-// START STRUCTS
-
-
-#[derive(CandidType, Deserialize, Clone, Debug)]
-pub struct Wallet {
-    pub ether: String,
-    pub usdc: String,
-    pub bitcoin: String,
-}
-
-#[derive(CandidType, Deserialize, Clone, Debug)]
-pub struct SquareProperties {
-    pub geohash: String,
-    pub metadata: String,
-    pub wallet: Wallet,
-}
-
-
-
-
-
-#[derive(CandidType, Deserialize, Debug)]
-pub enum MintReceipt {
-    Ok {
-        token_id: u64,
-        id: u128,
-    },
-    Err(ApiError),
-}
-
-
-
-
-#[derive(CandidType, Deserialize)]
-struct MintResult {
-    token_id: u64,
-    id: u128,
-}
-
-
-// END STRUCTS
 
 // START STATE
 
@@ -101,6 +60,22 @@ pub fn update_geohash_to_token_id(geohash: String, token_id: u64) {
     });
 }
 
+// Function to print the geohash-to-token ID map
+pub fn print_geohash_to_token_id_map() {
+    GEOHASH_TO_TOKEN_ID.with(|map| {
+        for (geohash, token_id) in map.borrow().iter() {
+            ic_cdk::println!("Geohash: {}, Token ID: {}", geohash, token_id);
+        }
+    });
+}
+
+// Function to get the token ID by geohash
+pub fn get_token_id_by_geohash(geohash: &str) -> Option<u64> {
+    GEOHASH_TO_TOKEN_ID.with(|map| {
+        map.borrow().get(geohash).cloned()
+    })
+}
+
 // END STATE
 
 // START HELPER FUNCTIONS
@@ -117,6 +92,63 @@ pub fn set_dip721_canister_id(dip721_canister_id: Option<Principal>) {
 
 
 // Create metadata for the NFT
+/*
+pub fn create_metadata(properties: SquareProperties) -> MetadataDesc {
+    // Convert HashMap to Vec<MetadataKeyVal>
+    let key_val_vec: Vec<MetadataKeyVal> = vec![
+        MetadataKeyVal {
+            key: "geohash".to_string(),
+            val: MetadataVal::TextContent(properties.geohash),
+        },
+        MetadataKeyVal {
+            key: "metadata".to_string(),
+            val: MetadataVal::TextContent(properties.metadata),
+        },
+        MetadataKeyVal {
+            key: "ether".to_string(),
+            val: MetadataVal::TextContent(properties.wallet.ether),
+        },
+        MetadataKeyVal {
+            key: "usdc".to_string(),
+            val: MetadataVal::TextContent(properties.wallet.usdc),
+        },
+        MetadataKeyVal {
+            key: "bitcoin".to_string(),
+            val: MetadataVal::TextContent(properties.wallet.bitcoin),
+        },
+    ];
+
+    // Create MetadataPart
+    let metadata_print = vec![MetadataPart {
+        purpose: MetadataPurpose::Rendered,
+        key_val_data: key_val_vec,
+        data: vec![], // Use an empty blob as appropriate
+    }];
+
+    ic_cdk::println!("GEOHASH_NFT_MINT_Created metadata: {:?}", metadata_print);
+
+    metadata_print
+}
+*/
+
+
+pub fn create_metadata(properties: SquareProperties) -> MetadataDesc {
+    // Create a HashMap with only the geohash
+    let mut key_val_data = HashMap::new();
+    key_val_data.insert("geohash".to_string(), MetadataVal::TextContent(properties.geohash));
+
+    // Define MetadataPart with minimal fields
+    let metadata_print = vec![MetadataPart {
+        purpose: MetadataPurpose::Rendered, // Use Rendered as it's the simplest purpose
+        key_val_data, // Only contains geohash
+        data: vec![], // Empty blob data
+    }];
+
+    ic_cdk::println!("GEOHASH_NFT_MINT_Created metadata: {:?}", metadata_print);
+
+    metadata_print
+}
+/*
 pub fn create_metadata(properties: SquareProperties) -> MetadataDesc {
     let mut key_val_data = HashMap::new();
     key_val_data.insert("geohash".to_string(), MetadataVal::TextContent(properties.geohash));
@@ -135,6 +167,7 @@ pub fn create_metadata(properties: SquareProperties) -> MetadataDesc {
 
     metadata_print
 }
+*/
 
 
 
@@ -143,6 +176,42 @@ pub fn create_metadata(properties: SquareProperties) -> MetadataDesc {
 // START FUNCTIONS
 
 // Function to mint an NFT in the DIP721 canister
+pub async fn mint_nft(
+    to: Principal,
+    properties: SquareProperties,
+    blob_content: Vec<u8>,
+) -> Result<(u128, u64), String> {
+    let dip721_canister_id = get_dip721_canister_id();
+    ic_cdk::println!("GEOHASH_NFT_MINT_Minting NFT with dip721_canister_id: {:?}", dip721_canister_id);
+
+    let geohash_clone = properties.geohash.clone(); // Clone the geohash
+
+    // Create minimal metadata
+    let metadata = create_metadata(properties);
+    ic_cdk::println!("GEOHASH_NFT_MINT_Metadata being sent: {:?}", metadata);
+
+    let result: Result<(MintReceipt,), _> = call(
+        dip721_canister_id,
+        "mintDip721",
+        (to, metadata, blob_content),
+    ).await;
+
+    // Log the result of the call
+    ic_cdk::println!("GEOHASH_NFT_MINT_Result of mintDip721 call: {:?}", result);
+
+    match result {
+        Ok((mint_result,)) => match mint_result {
+            MintReceipt::Ok { id, token_id } => {
+                update_geohash_to_token_id(geohash_clone, token_id); // Update mapping with geohash
+                Ok((id, token_id))
+            },
+            MintReceipt::Err(api_error) => Err(format!("GEOHASH_NFT_MINT_Failed to mint NFT: {:?}", api_error)),
+        },
+        Err(err) => Err(format!("GEOHASH_NFT_MINT_Failed to mint NFT: {:?}", err)),
+    }
+}
+
+/*
 pub async fn mint_nft(
     to: Principal,
     properties: SquareProperties,
@@ -180,5 +249,5 @@ pub async fn mint_nft(
         Err(err) => Err(format!("GEOHASH_NFT_MINT_Failed to mint NFT: {:?}", err)),
     }
 }
-
+*/
 // END FUNCTIONS
