@@ -69,6 +69,9 @@ pub fn print_geohash_to_token_id_map() {
     });
 }
 
+
+
+
 // Function to get the token ID by geohash
 pub fn get_token_id_by_geohash(geohash: &str) -> Option<u64> {
     GEOHASH_TO_TOKEN_ID.with(|map| {

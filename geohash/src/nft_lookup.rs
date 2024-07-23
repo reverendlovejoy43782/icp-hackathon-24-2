@@ -52,35 +52,6 @@ fn get_dip721_canister_id() -> Principal {
 // START FUNCTIONS
 
 
-// Integration in get_metadata_by_token_id
-
-pub async fn get_metadata_by_token_id(token_id: u64) -> Result<MetadataDesc, String> {
-    let dip721_canister_id = get_dip721_canister_id();
-    let result: Result<(MetadataResult,), _> = call(
-        dip721_canister_id,
-        "getMetadataDip721",
-        (token_id,)
-    ).await;
-
-    ic_cdk::println!("GEOHASH_NFT_LOOKUP_metadata_result: {:?}", result);
-
-    match result {
-        Ok((MetadataResult::Ok(metadata),)) => {
-            ic_cdk::println!("GEOHASH_NFT_LOOKUP_Metadata_OK: {:?}", metadata);
-            Ok(metadata)
-        },
-        Ok((MetadataResult::Err(err),)) => {
-            ic_cdk::println!("GEOHASH_NFT_LOOKUP_Metadata_ERR: {:?}", err);
-            Err(format!("Failed to get metadata: {:?}", err))
-        },
-        Err(err) => {
-            ic_cdk::println!("GEOHASH_NFT_LOOKUP_DIP721_ERR: {:?}", err);
-            Err(format!("Failed to get metadata from DIP721: {:?}", err))
-        },
-    }
-}
-
-
 
 pub async fn get_nft_by_geohash(geohash: String) -> Result<Nft, String> {
     // Get the token ID from the geohash-to-token ID mapping
