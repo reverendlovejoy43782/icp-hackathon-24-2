@@ -32,6 +32,7 @@ use grid_generator::decode_geohash;
 // Standard Library Imports
 use std::cell::RefCell;
 use std::collections::HashMap;
+use serde_json::json;
 
 // END IMPORTS AND PRAGMAS
 
@@ -328,6 +329,45 @@ async fn mint_nft_with_geohash(geolocation: Geolocation) -> Option<Nft> {
 
 */
 
+
+// Define an update function to compute the area and geohash for a given geolocation
+#[update]
+async fn compute_geohash(geolocation: Geolocation) -> String {
+    // Calculate the grid and match the geolocation to the nearest grid square
+    let (nearest_geohash, bounds) = find_nearest_geohash_with_bounds(geolocation.latitude, geolocation.longitude);
+
+    // Helper function to get or mint the NFT square
+    let (nft_square, created) = get_or_mint_nft_square(&nearest_geohash).await;
+
+    // Simplified logging
+    ic_cdk::println!("GEOHASH_LIB:RS_COMPUTE_GEOHASH_NFT_SQUARE: {:?}, CREATED: {:?}", nft_square, created);
+
+    // Create the response as a JSON object
+    let response = json!({
+        "lat_start": bounds.lat_start,
+        "lon_start": bounds.lon_start,
+        "lat_end": bounds.lat_end,
+        "lon_end": bounds.lon_end,
+        "geohash": nearest_geohash,
+        "nft_square": nft_square.map(|nft| {
+            json!({
+                "owner": nft.owner.to_text(),
+                "token_id": nft.token_id,
+                "metadata": nft.metadata, // Assuming metadata is serializable to JSON
+                "content": nft.content,
+            })
+        }),
+        "created": created,
+    });
+
+    // Log the response
+    ic_cdk::println!("GEOHASH_LIB:RS_COMPUTE_GEOHASH_AreaResponse: {:?}", response);
+
+    // Return the response as a JSON string
+    response.to_string()
+}
+
+/*
 // Define an update function to compute the area and geohash for a given geolocation
 #[update]
 async fn compute_geohash(geolocation: Geolocation) -> AreaResponse {
@@ -360,8 +400,47 @@ async fn compute_geohash(geolocation: Geolocation) -> AreaResponse {
    
     
 }
+*/
 
+// Define an update function to compute the area for a given geohash
+#[update]
+async fn compute_area(geohash: String) -> String {
+    // Decode the geohash back into coordinates
+    let coord = decode_geohash(&geohash).unwrap();
 
+    // Calculate the grid and match the coordinates to the nearest grid square
+    let (nearest_geohash, bounds) = find_nearest_geohash_with_bounds(coord.y, coord.x);
+
+    // Helper function to get or mint the NFT square
+    let (nft_square, created) = get_or_mint_nft_square(&nearest_geohash).await;
+
+    ic_cdk::println!("GEOHASH_LIB:RS_COMPUTE_AREA_NFT_SQUARE: {:?}, CREATED: {:?}", nft_square, created);
+
+    // Create the response as a JSON object
+    let response = json!({
+        "lat_start": bounds.lat_start,
+        "lon_start": bounds.lon_start,
+        "lat_end": bounds.lat_end,
+        "lon_end": bounds.lon_end,
+        "geohash": nearest_geohash,
+        "nft_square": nft_square.map(|nft| {
+            json!({
+                "owner": nft.owner.to_text(),
+                "token_id": nft.token_id,
+                "metadata": nft.metadata, // Assuming metadata is serializable to JSON
+                "content": nft.content,
+            })
+        }),
+        "created": created,
+    });
+
+    // Log the response
+    ic_cdk::println!("GEOHASH_LIB:RS_COMPUTE_AREA_AreaResponse: {:?}", response);
+
+    // Return the response as a JSON string
+    response.to_string()
+}
+/*
 // Define an update function to compute the area for a given geohash
 #[update]
 async fn compute_area(geohash: String) -> AreaResponse {
@@ -389,7 +468,7 @@ async fn compute_area(geohash: String) -> AreaResponse {
         created,
     }
 }
-
+*/
 
 // END METHODS
 

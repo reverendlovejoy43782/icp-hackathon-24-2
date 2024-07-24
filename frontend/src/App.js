@@ -38,8 +38,34 @@ function App() {
       const geolocation = { latitude: parseFloat(latitude), longitude: parseFloat(longitude) };
       console.log('Sending geolocation:', geolocation);
 
-      const result = await geohashActor.compute_geohash(geolocation);
-      console.log('Received result:', result);
+      const resultString = await geohashActor.compute_geohash(geolocation);
+      console.log('Received result:', resultString);
+
+      // Parse the result string to JSON
+      const result = JSON.parse(resultString);
+
+      // Enhanced logging for the entire result
+      console.log('Result (full):', JSON.stringify(result, null, 2));
+
+      // Log specific fields within the result object
+      console.log('Result lat_start:', result.lat_start);
+      console.log('Result lon_start:', result.lon_start);
+      console.log('Result lat_end:', result.lat_end);
+      console.log('Result lon_end:', result.lon_end);
+      console.log('Result geohash:', result.geohash);
+      console.log('Result nft_square:', JSON.stringify(result.nft_square, null, 2));
+      console.log('Result created:', result.created);
+
+      // Log the types of each field
+      console.log('Type of lat_start:', typeof result.lat_start);
+      console.log('Type of lon_start:', typeof result.lon_start);
+      console.log('Type of lat_end:', typeof result.lat_end);
+      console.log('Type of lon_end:', typeof result.lon_end);
+      console.log('Type of geohash:', typeof result.geohash);
+      console.log('Type of nft_square:', typeof result.nft_square);
+      console.log('Type of created:', typeof result.created);
+
+
 
       if (result && result.lat_start !== undefined && result.lon_start !== undefined && result.lat_end !== undefined && result.lon_end !== undefined && result.geohash) {
         console.log('Parsed result correctly:', result);
@@ -66,8 +92,59 @@ function App() {
     }
   };
 
+
   const handleGeohashSubmit = async () => {
     try {
+      const resultString = await geohashActor.compute_area(geohash);
+      console.log('Received result:', resultString);
+  
+      // Parse the result string to JSON
+      const result = JSON.parse(resultString);
+  
+      // Enhanced logging for the entire result
+      console.log('Result (full):', JSON.stringify(result, null, 2));
+  
+      // Log specific fields within the result object
+      console.log('Result lat_start:', result.lat_start);
+      console.log('Result lon_start:', result.lon_start);
+      console.log('Result lat_end:', result.lat_end);
+      console.log('Result lon_end:', result.lon_end);
+      console.log('Result geohash:', result.geohash);
+      console.log('Result nft_square:', JSON.stringify(result.nft_square, null, 2));
+      console.log('Result created:', result.created);
+  
+      if (result && result.lat_start !== undefined && result.lon_start !== undefined && result.lat_end !== undefined && result.lon_end !== undefined && result.geohash) {
+        console.log('Parsed result correctly:', result);
+  
+        setResponse(result);
+        setError(null);
+  
+        setLocation({ latitude: result.lat_start, longitude: result.lon_start });
+        setBounds({
+          lat_start: result.lat_start,
+          lat_end: result.lat_end,
+          lon_start: result.lon_start,
+          lon_end: result.lon_end,
+        });
+        setMapGeohash(result.geohash);
+        setIsUserLocation(false); // Set flag to false when geohash is used
+      } else {
+        throw new Error('Unexpected response format');
+      }
+    } catch (err) {
+      console.error('Error:', err.message, err);
+      setError(err.message);
+      setResponse(null);
+    }
+  };
+
+  /*
+  const handleGeohashSubmit = async () => {
+    try {
+
+      
+
+      
       const result = await geohashActor.compute_area(geohash);
       setResponse(result);
       setError(null);
@@ -86,6 +163,7 @@ function App() {
       setResponse(null);
     }
   };
+  */
 
   return (
     <div className="container mx-auto p-4">

@@ -63,8 +63,10 @@ export const idlFactory = ({ IDL }) => {
   });
 
   return IDL.Service({
-    compute_area: IDL.Func([IDL.Text], [AreaResponse], []),
-    compute_geohash: IDL.Func([Geolocation], [AreaResponse], []),
+    compute_area: IDL.Func([IDL.Text], [IDL.Text], []),
+    //compute_area: IDL.Func([IDL.Text], [AreaResponse], []),
+    compute_geohash: IDL.Func([Geolocation], [IDL.Text], []),
+    //compute_geohash: IDL.Func([Geolocation], [AreaResponse], []),
   });
 };
 

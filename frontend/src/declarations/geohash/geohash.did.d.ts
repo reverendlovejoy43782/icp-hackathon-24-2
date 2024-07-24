@@ -65,9 +65,8 @@ export interface AreaResponse {
 }
 
 export interface _SERVICE {
-  compute_area: ActorMethod<[string], AreaResponse>;
-  compute_geohash: ActorMethod<[Geolocation], AreaResponse>;
+  compute_area: ActorMethod<[string], string>;
+  //compute_area: ActorMethod<[string], AreaResponse>;
+  compute_geohash: ActorMethod<[Geolocation], string>;
+  //compute_geohash: ActorMethod<[Geolocation], AreaResponse>;
 }
-
-export declare const idlFactory: IDL.InterfaceFactory;
-export declare const init: (args: { IDL: typeof IDL }) => IDL.Type[];

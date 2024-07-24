@@ -58,6 +58,6 @@ type AreaResponse = record {
     created: bool;
 };
 service : {
-    compute_geohash: (Geolocation) -> (AreaResponse);
-    compute_area: (text) -> (AreaResponse);
+    compute_geohash: (Geolocation) -> (text);
+    compute_area: (text) -> (text);
 }

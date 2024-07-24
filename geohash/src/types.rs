@@ -53,7 +53,7 @@ pub struct MetadataPart {
 }
 
 // Variation of MetadataPart for lookup, here key_val_data is a vector of MetadataKeyVal instead of a HashMap
-#[derive(CandidType, Deserialize, Clone, Debug)]
+#[derive(CandidType, Deserialize, Clone, Debug, serde::Serialize)]
 pub struct MetadataPartLookup {
     pub purpose: MetadataPurpose,
     pub key_val_data: Vec<MetadataKeyVal>,
@@ -61,14 +61,14 @@ pub struct MetadataPartLookup {
 }
 
 // Enum representing the purpose of metadata
-#[derive(CandidType, Deserialize, Clone, Debug, PartialEq)]
+#[derive(CandidType, Deserialize, Clone, Debug, serde::Serialize, PartialEq)]
 pub enum MetadataPurpose {
     Preview,
     Rendered,
 }
 
 // Enum representing different types of metadata values
-#[derive(CandidType, Deserialize, Clone, Debug)]
+#[derive(CandidType, Deserialize, Clone, Debug, serde::Serialize)]
 pub enum MetadataVal {
     TextContent(String),
     BlobContent(Vec<u8>),
@@ -80,7 +80,7 @@ pub enum MetadataVal {
 }
 
 // Struct representing a key-value pair for metadata
-#[derive(CandidType, Deserialize, Clone, Debug)]
+#[derive(CandidType, Deserialize, Clone, Debug, serde::Serialize)]
 pub struct MetadataKeyVal {
     pub key: String,
     pub val: MetadataVal,
