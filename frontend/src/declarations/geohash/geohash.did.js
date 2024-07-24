@@ -9,22 +9,47 @@ export const idlFactory = ({ IDL }) => {
     Nat64Content: IDL.Nat64,
   });
 
-  const KeyValRecord = IDL.Record({
+  const MetadataKeyVal = IDL.Record({
     key: IDL.Text,
     val: MetadataVal,
   });
 
-  const MetadataDesc = IDL.Record({
+  const MetadataPart = IDL.Record({
     purpose: IDL.Text,
-    key_val_data: IDL.Vec(KeyValRecord),
+    key_val_data: IDL.Vec(MetadataKeyVal),
     data: IDL.Vec(IDL.Nat8),
   });
+
+  const MetadataLookupPart = IDL.Record({
+    purpose: IDL.Text,
+    key_val_data: IDL.Vec(MetadataKeyVal),
+    data: IDL.Vec(IDL.Nat8),
+  });
+
+  const MetadataLookupDesc = IDL.Vec(MetadataLookupPart);
 
   const Nft = IDL.Record({
     owner: IDL.Principal,
     token_id: IDL.Nat64,
-    metadata: MetadataDesc,
+    metadata: MetadataLookupDesc,
     content: IDL.Vec(IDL.Nat8),
+  });
+
+  const Wallet = IDL.Record({
+    ether: IDL.Text,
+    usdc: IDL.Text,
+    bitcoin: IDL.Text,
+  });
+
+  const SquareProperties = IDL.Record({
+    geohash: IDL.Text,
+    metadata: IDL.Text,
+    wallet: Wallet,
+  });
+
+  const Geolocation = IDL.Record({
+    latitude: IDL.Float64,
+    longitude: IDL.Float64,
   });
 
   const AreaResponse = IDL.Record({
@@ -34,11 +59,7 @@ export const idlFactory = ({ IDL }) => {
     lon_end: IDL.Float64,
     geohash: IDL.Text,
     nft_square: IDL.Opt(Nft),
-  });
-
-  const Geolocation = IDL.Record({
-    latitude: IDL.Float64,
-    longitude: IDL.Float64,
+    created: IDL.Bool,
   });
 
   return IDL.Service({

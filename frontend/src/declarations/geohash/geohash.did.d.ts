@@ -11,22 +11,47 @@ export interface MetadataVal {
   Nat64Content?: bigint;
 }
 
-export interface KeyValRecord {
+export interface MetadataKeyVal {
   key: string;
   val: MetadataVal;
 }
 
-export interface MetadataDesc {
+export interface MetadataPart {
   purpose: string;
-  key_val_data: KeyValRecord[];
+  key_val_data: MetadataKeyVal[];
   data: Uint8Array;
 }
+
+export interface MetadataLookupPart {
+  purpose: string;
+  key_val_data: MetadataKeyVal[];
+  data: Uint8Array;
+}
+
+export type MetadataLookupDesc = MetadataLookupPart[];
 
 export interface Nft {
   owner: Principal;
   token_id: bigint;
-  metadata: MetadataDesc;
+  metadata: MetadataLookupDesc;
   content: Uint8Array;
+}
+
+export interface Wallet {
+  ether: string;
+  usdc: string;
+  bitcoin: string;
+}
+
+export interface SquareProperties {
+  geohash: string;
+  metadata: string;
+  wallet: Wallet;
+}
+
+export interface Geolocation {
+  latitude: number;
+  longitude: number;
 }
 
 export interface AreaResponse {
@@ -36,11 +61,7 @@ export interface AreaResponse {
   lon_end: number;
   geohash: string;
   nft_square: Nft | null; // Optional field for the NFT
-}
-
-export interface Geolocation {
-  latitude: number;
-  longitude: number;
+  created: boolean; // Indicating if NFT was created
 }
 
 export interface _SERVICE {

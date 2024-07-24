@@ -55,11 +55,9 @@ type AreaResponse = record {
     lon_end: float64;
     geohash: text;
     nft_square: opt Nft; 
+    created: bool;
 };
 service : {
     compute_geohash: (Geolocation) -> (AreaResponse);
     compute_area: (text) -> (AreaResponse);
-    mint_nft_with_geohash: (Geolocation) -> (opt Nft);
-    print_geohash_map: () -> ();
-    get_nft_by_geohash_method: (text) -> (opt Nft);
 }

@@ -1,46 +1,63 @@
 type MetadataVal = variant {
-  TextContent: text;
-  BlobContent: blob;
-  NatContent: nat;
-  Nat8Content: nat8;
-  Nat16Content: nat16;
-  Nat32Content: nat32;
-  Nat64Content: nat64;
+    TextContent: text;
+    BlobContent: blob;
+    NatContent: nat;
+    Nat8Content: nat8;
+    Nat16Content: nat16;
+    Nat32Content: nat32;
+    Nat64Content: nat64;
+};
+type MetadataPurpose = variant { Preview; Rendered };
+type MetadataKeyVal = record {
+    key: text;
+    val: MetadataVal;
+};
+type MetadataPart = record {
+    purpose: MetadataPurpose;
+    key_val_data: vec MetadataKeyVal;
+    data: blob;
 };
 
-type KeyValRecord = record {
-  key: text;
-  val: MetadataVal;
+
+type MetadataLookupPart = record {
+    purpose: MetadataPurpose;
+    key_val_data: vec MetadataKeyVal;
+    data: blob;
 };
 
-type MetadataDesc = record {
-  purpose: text;
-  key_val_data: vec KeyValRecord;
-  data: blob;
-};
+type MetadataLookupDesc = vec MetadataLookupPart;
 
+type MetadataDesc = vec MetadataPart;
 type Nft = record {
-  owner: principal;
-  token_id: nat64;
-  metadata: MetadataDesc;
-  content: blob;
+    owner: principal;
+    token_id: nat64;
+    metadata: MetadataLookupDesc;
+    content: vec nat8;
 };
-
+type Wallet = record {
+    ether: text;
+    usdc: text;
+    bitcoin: text;
+};
+type SquareProperties = record {
+    geohash: text;
+    metadata: text;
+    wallet: Wallet;
+};
 type Geolocation = record { 
-  latitude: float64; 
-  longitude: float64; 
+    latitude: float64; 
+    longitude: float64; 
 };
-
 type AreaResponse = record {
-  lat_start: float64;
-  lon_start: float64;
-  lat_end: float64;
-  lon_end: float64;
-  geohash: text;
-  nft_square: opt Nft; 
+    lat_start: float64;
+    lon_start: float64;
+    lat_end: float64;
+    lon_end: float64;
+    geohash: text;
+    nft_square: opt Nft; 
+    created: bool;
 };
-
 service : {
-  compute_geohash: (Geolocation) -> (AreaResponse);
-  compute_area: (text) -> (AreaResponse);
+    compute_geohash: (Geolocation) -> (AreaResponse);
+    compute_area: (text) -> (AreaResponse);
 }

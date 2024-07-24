@@ -48,8 +48,61 @@ thread_local! {
 
 // START HELPER FUNCTIONS
 
-// In lib.rs
+async fn get_or_mint_nft_square(nearest_geohash: &String) -> (Option<Nft>, bool) {
+    match get_token_id_by_geohash(nearest_geohash) {
+        Some(token_id) => {
+            // Token ID exists, fetch the NFT information
+            match get_nft_by_geohash(nearest_geohash.clone()).await {
+                Ok(nft) => (Some(nft), false),
+                Err(err) => {
+                    ic_cdk::println!("GEOHASH_LIB.RS_Failed to get NFT by geohash: {:?}", err);
+                    (None, false)
+                }
+            }
+        },
+        None => {
+            // Token ID does not exist, mint a new NFT
+            ic_cdk::println!("GEOHASH_LIB.RS_New square detected: {:?}", nearest_geohash);
+            
+            let properties = SquareProperties {
+                geohash: nearest_geohash.clone(),
+                metadata: "".to_string(), // Empty metadata, as we only want to store geohash
+            };
 
+            // Get the principal of the caller
+            let caller = ic_cdk::api::caller();
+
+            // Empty content for the blob (no additional data)
+            let blob_content = vec![];
+
+            // Create metadata containing only the geohash
+            let metadata = create_metadata(properties.clone());
+
+            // Attempt to mint the NFT
+            match mint_nft(caller, properties, blob_content).await {
+                Ok((txid, token_id)) => {
+                    // Fetch the newly minted NFT
+                    match get_nft_by_geohash(nearest_geohash.clone()).await {
+                        Ok(nft) => {
+                            ic_cdk::println!("GEOHASH_LIB.RS_NFT minted successfully with nft: {:?}", nft);
+                            (Some(nft), true)
+                        },
+                        Err(err) => {
+                            ic_cdk::println!("GEOHASH_LIB.RS_Failed to get NFT by geohash after minting: {:?}", err);
+                            (None, false)
+                        }
+                    }
+                },
+                Err(err) => {
+                    // Handle error minting NFT
+                    ic_cdk::println!("GEOHASH_LIB.RS_Failed to mint NFT: {:?}", err);
+                    (None, false)
+                },
+            }
+        }
+    }
+}
+/*
 async fn get_or_mint_nft_square(nearest_geohash: &String) -> Option<Nft> {
     match get_token_id_by_geohash(nearest_geohash) {
         Some(token_id) => {
@@ -104,6 +157,7 @@ async fn get_or_mint_nft_square(nearest_geohash: &String) -> Option<Nft> {
         }
     }
 }
+*/
 
 // END HELPER FUNCTIONS
 
@@ -164,6 +218,7 @@ fn post_upgrade() {
 
 // START METHODS
 
+/*
 // Function to print the geohash-to-token ID map
 #[update]
 fn print_geohash_map() {
@@ -271,7 +326,7 @@ async fn mint_nft_with_geohash(geolocation: Geolocation) -> Option<Nft> {
     mint_result
 }
 
-
+*/
 
 // Define an update function to compute the area and geohash for a given geolocation
 #[update]
@@ -280,10 +335,10 @@ async fn compute_geohash(geolocation: Geolocation) -> AreaResponse {
     let (nearest_geohash, bounds) = find_nearest_geohash_with_bounds(geolocation.latitude, geolocation.longitude);
 
     // Helper function to get or mint the NFT square
-    let nft_square = get_or_mint_nft_square(&nearest_geohash).await;
+    let (nft_square, created) = get_or_mint_nft_square(&nearest_geohash).await;
 
     
-    ic_cdk::println!("GEOHASH_LIB:RS_NFT_SQUARE: {:?}", nft_square);
+    ic_cdk::println!("GEOHASH_LIB:RS_COMPUTE_GEOHASH_NFT_SQUARE: {:?}, CREATED: {:?}", nft_square, created);
     
     
     // Return the matched square's area and the nearest geohash
@@ -294,6 +349,7 @@ async fn compute_geohash(geolocation: Geolocation) -> AreaResponse {
         lon_end: bounds.lon_end,
         geohash: nearest_geohash,
         nft_square,
+        created,
         
     };
 
@@ -317,10 +373,10 @@ async fn compute_area(geohash: String) -> AreaResponse {
 
     
     // Helper function to get or mint the NFT square
-    let nft_square = get_or_mint_nft_square(&nearest_geohash).await;
+    let (nft_square, created) = get_or_mint_nft_square(&nearest_geohash).await;
 
     
-    ic_cdk::println!("GEOHASH_LIB:RS_NFT_SQUARE: {:?}", nft_square);
+    ic_cdk::println!("GEOHASH_LIB:RS_COMPUTE_AREA_NFT_SQUARE: {:?}, CREATED: {:?}", nft_square, created);
 
     // Return the matched square's area and the original geohash
     AreaResponse {
@@ -330,7 +386,7 @@ async fn compute_area(geohash: String) -> AreaResponse {
         lon_end: bounds.lon_end,
         geohash,
         nft_square,
-        //nft_square: nft_info_dip721.nft_square, // Fetch owned NFTs
+        created,
     }
 }
 

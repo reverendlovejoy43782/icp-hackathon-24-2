@@ -18,6 +18,7 @@ pub struct AreaResponse {
     pub lon_end: f64,
     pub geohash: String,
     pub nft_square: Option<Nft>,
+    pub created: bool,
 }
 
 // Metadata description type, representing a list of metadata parts
@@ -127,94 +128,3 @@ pub struct MintResult {
 }
 
 
-/*
-use ic_cdk::export::candid::{CandidType, Deserialize, Principal};
-use std::collections::HashMap;
-
-pub type MetadataDesc = Vec<MetadataPart>;
-
-#[derive(CandidType, Deserialize, Clone, Debug)]
-pub struct MetadataPart {
-    pub purpose: MetadataPurpose,
-    pub key_val_data: HashMap<String, MetadataVal>, 
-    pub data: Vec<u8>,
-}
-
-#[derive(CandidType, Deserialize, Clone, Debug)]
-pub struct Wallet {
-    pub ether: String,
-    pub usdc: String,
-    pub bitcoin: String,
-}
-
-#[derive(CandidType, Deserialize, Clone, Debug)]
-pub struct SquareProperties {
-    pub geohash: String,
-    pub metadata: String,
-    //pub wallet: Wallet, for new commented out
-}
-
-#[derive(CandidType, Deserialize, Clone, Debug, PartialEq)]
-pub enum MetadataPurpose {
-    Preview,
-    Rendered,
-}
-
-#[derive(CandidType, Deserialize, Clone, Debug)]
-pub enum MetadataVal {
-    TextContent(String),
-    BlobContent(Vec<u8>),
-    NatContent(u128),
-    Nat8Content(u8),
-    Nat16Content(u16),
-    Nat32Content(u32),
-    Nat64Content(u64),
-}
-
-#[derive(CandidType, Deserialize, Clone, Debug)]
-pub struct MetadataKeyVal {
-    pub key: String,
-    pub val: MetadataVal,
-}
-
-#[derive(CandidType, Deserialize, Debug)]
-pub enum MetadataResult {
-    Ok(MetadataDesc),
-    Err(ApiError),
-}
-
-#[derive(CandidType, Deserialize, Debug)]
-pub enum ApiError {
-    Unauthorized,
-    InvalidTokenId,
-    ZeroAddress,
-    Other,
-}
-
-
-#[derive(CandidType, Deserialize, Clone, Debug)]
-pub struct Nft {
-    pub owner: Principal,
-    pub token_id: u64,
-    pub metadata: MetadataDesc,
-    pub content: Vec<u8>,
-}
-
-#[derive(CandidType, Deserialize, Debug)]
-pub enum MintReceipt {
-    Ok {
-        token_id: u64,
-        id: u128,
-    },
-    Err(ApiError),
-}
-
-
-
-
-#[derive(CandidType, Deserialize)]
-pub struct MintResult {
-    token_id: u64,
-    id: u128,
-}
-*/
