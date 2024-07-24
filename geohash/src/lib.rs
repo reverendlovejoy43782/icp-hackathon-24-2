@@ -367,40 +367,7 @@ async fn compute_geohash(geolocation: Geolocation) -> String {
     response.to_string()
 }
 
-/*
-// Define an update function to compute the area and geohash for a given geolocation
-#[update]
-async fn compute_geohash(geolocation: Geolocation) -> AreaResponse {
-    // Calculate the grid and match the geolocation to the nearest grid square
-    let (nearest_geohash, bounds) = find_nearest_geohash_with_bounds(geolocation.latitude, geolocation.longitude);
 
-    // Helper function to get or mint the NFT square
-    let (nft_square, created) = get_or_mint_nft_square(&nearest_geohash).await;
-
-    
-    ic_cdk::println!("GEOHASH_LIB:RS_COMPUTE_GEOHASH_NFT_SQUARE: {:?}, CREATED: {:?}", nft_square, created);
-    
-    
-    // Return the matched square's area and the nearest geohash
-    let response = AreaResponse {
-        lat_start: bounds.lat_start,
-        lon_start: bounds.lon_start,
-        lat_end: bounds.lat_end,
-        lon_end: bounds.lon_end,
-        geohash: nearest_geohash,
-        nft_square,
-        created,
-        
-    };
-
-    // Print the AreaResponse
-    ic_cdk::println!("GEOHASH_LIB:RS_COMPUTE_GEOHASH_AreaResponse: {:?}", response);
-
-    response
-   
-    
-}
-*/
 
 // Define an update function to compute the area for a given geohash
 #[update]
@@ -440,35 +407,7 @@ async fn compute_area(geohash: String) -> String {
     // Return the response as a JSON string
     response.to_string()
 }
-/*
-// Define an update function to compute the area for a given geohash
-#[update]
-async fn compute_area(geohash: String) -> AreaResponse {
-    // Decode the geohash back into coordinates
-    let coord = decode_geohash(&geohash).unwrap();
 
-    // Calculate the grid and match the coordinates to the nearest grid square
-    let (nearest_geohash, bounds) = find_nearest_geohash_with_bounds(coord.y, coord.x);
-
-    
-    // Helper function to get or mint the NFT square
-    let (nft_square, created) = get_or_mint_nft_square(&nearest_geohash).await;
-
-    
-    ic_cdk::println!("GEOHASH_LIB:RS_COMPUTE_AREA_NFT_SQUARE: {:?}, CREATED: {:?}", nft_square, created);
-
-    // Return the matched square's area and the original geohash
-    AreaResponse {
-        lat_start: bounds.lat_start,
-        lon_start: bounds.lon_start,
-        lat_end: bounds.lat_end,
-        lon_end: bounds.lon_end,
-        geohash,
-        nft_square,
-        created,
-    }
-}
-*/
 
 // END METHODS
 
