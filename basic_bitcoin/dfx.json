@@ -6,7 +6,7 @@
       "package": "basic_bitcoin",
       "candid": "src/basic_bitcoin/basic_bitcoin.did",
       "wasm": "target/wasm32-unknown-unknown/release/basic_bitcoin.wasm",
-      "build": "src/basic_bitcoin/build.sh",
+      "build": "./build.sh",
       "metadata": [
         {
           "name": "candid:service"

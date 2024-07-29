@@ -26,6 +26,18 @@
             "candid": "nft-wallet/nftwallet.did",
             "build": "cd nft-wallet && cargo build --target wasm32-unknown-unknown --release --target-dir target && ic-wasm target/wasm32-unknown-unknown/release/nft_wallet_canister.wasm -o target/wasm32-unknown-unknown/release/nft_wallet_opt.wasm shrink",
             "package": "nftwallet"
+        },
+        "basic_bitcoin": {
+            "type": "custom",
+            "package": "basic_bitcoin",
+            "candid": "basic_bitcoin/basic_bitcoin.did",
+            "wasm": "target/wasm32-unknown-unknown/release/basic_bitcoin.wasm",
+            "build": "cd basic_bitcoin && ./build.sh",
+            "metadata": [
+                {
+                    "name": "candid:service"
+                }
+            ]
         }
     },
     "networks": {
