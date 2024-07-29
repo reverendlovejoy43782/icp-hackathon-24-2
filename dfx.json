@@ -41,6 +41,9 @@
         }
     },
     "networks": {
+        "ic": {
+            "providers": ["https://ic0.app"]
+        },
         "local": {
             "bind": "127.0.0.1:8001"
         }

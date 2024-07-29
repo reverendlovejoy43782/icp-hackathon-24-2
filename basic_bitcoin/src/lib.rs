@@ -30,6 +30,18 @@ pub fn init(network: BitcoinNetwork) {
 
     KEY_NAME.with(|key_name| {
         key_name.replace(String::from(match network {
+            // For all environments during local development, use the available test key.
+            BitcoinNetwork::Regtest | BitcoinNetwork::Testnet | BitcoinNetwork::Mainnet => "dfx_test_key",
+        }))
+    });
+}
+/*
+#[init]
+pub fn init(network: BitcoinNetwork) {
+    NETWORK.with(|n| n.set(network));
+
+    KEY_NAME.with(|key_name| {
+        key_name.replace(String::from(match network {
             // For local development, we use a special test key with dfx.
             BitcoinNetwork::Regtest => "dfx_test_key",
             // On the IC we're using a test ECDSA key.
@@ -37,6 +49,7 @@ pub fn init(network: BitcoinNetwork) {
         }))
     });
 }
+*/
 
 /// Returns the balance of the given bitcoin address.
 #[update]
