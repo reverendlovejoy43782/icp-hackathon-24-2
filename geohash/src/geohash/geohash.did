@@ -60,4 +60,5 @@ type AreaResponse = record {
 service : {
     compute_geohash: (Geolocation) -> (text);
     compute_area: (text) -> (text);
+    get_bitcoin_address_update: () -> (text);
 }

@@ -5,6 +5,7 @@
 
 // Modules
 mod types;
+mod bitcoin;
 mod nft_mint;
 mod nft_lookup;
 mod area_generator;
@@ -18,6 +19,9 @@ use ic_cdk_macros::*;
 
 // Types
 use crate::types::{Geolocation, AreaResponse, MetadataDesc, Nft, SquareProperties, MintReceipt, Wallet};
+
+// Functions from bitcoin
+use bitcoin::get_bitcoin_address;
 
 // Functions from nft_mint
 use nft_mint::{init_canister_id as init_mint_id, print_geohash_to_token_id_map, mint_nft, create_metadata, get_token_id_by_geohash};
@@ -42,6 +46,7 @@ use serde_json::json;
 // Define the mapping of geohash to token ID using thread-local storage
 thread_local! {
     static GEOHASH_TO_TOKEN_ID: RefCell<HashMap<String, u64>> = RefCell::new(HashMap::new());
+    static BASIC_BITCOIN_CANISTER_ID: RefCell<Option<Principal>> = RefCell::new(None); // Added for Bitcoin
 }
 
 // END LOCAL STORAGE
@@ -189,6 +194,13 @@ fn init() {
     init_lookup_id(dip721_canister_principal);
     init_mint_id(dip721_canister_principal);
     ic_cdk::println!("NFT_WALLET_CANISTER_ID and DIP721_CANISTER_ID hardcoded and loaded successfully.");
+
+
+    // Set BASIC_BITCOIN_CANISTER_ID
+    let basic_bitcoin_canister_id = "bkyz2-fmaaa-aaaaa-qaaaq-cai";
+    let basic_bitcoin_canister_principal = Principal::from_text(basic_bitcoin_canister_id)
+        .expect("Invalid BASIC_BITCOIN_CANISTER_ID principal");
+    BASIC_BITCOIN_CANISTER_ID.with(|id| *id.borrow_mut() = Some(basic_bitcoin_canister_principal));
 }
 
 
@@ -408,6 +420,16 @@ async fn compute_area(geohash: String) -> String {
     response.to_string()
 }
 
+
+// Function to get the Bitcoin address
+#[update]
+async fn get_bitcoin_address_update() -> String {
+    let bitcoin_canister_id = BASIC_BITCOIN_CANISTER_ID.with(|id| id.borrow().clone().expect("Bitcoin canister ID not set"));
+    match get_bitcoin_address(bitcoin_canister_id).await {
+        Ok(address) => address,
+        Err(err) => format!("Failed to get Bitcoin address: {}", err),
+    }
+}
 
 // END METHODS
 
