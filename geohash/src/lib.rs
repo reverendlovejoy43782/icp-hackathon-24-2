@@ -18,7 +18,7 @@ use ic_cdk::export::Principal;
 use ic_cdk_macros::*;
 
 // Types
-use crate::types::{Geolocation, AreaResponse, MetadataDesc, Nft, SquareProperties, MintReceipt, Wallet};
+use crate::types::{Geolocation, AreaResponse, MetadataDesc, Nft, SquareProperties, MintReceipt, Wallet, BitcoinWallet};
 
 // Functions from bitcoin
 use bitcoin::get_bitcoin_address;
@@ -54,6 +54,18 @@ thread_local! {
 
 // START HELPER FUNCTIONS
 
+
+
+// Function to get the Bitcoin address
+async fn get_bitcoin_address_update() -> String {
+    let bitcoin_canister_id = BASIC_BITCOIN_CANISTER_ID.with(|id| id.borrow().clone().expect("Bitcoin canister ID not set"));
+    match get_bitcoin_address(bitcoin_canister_id).await {
+        Ok(address) => address,
+        Err(err) => format!("Failed to get Bitcoin address: {}", err),
+    }
+}
+
+// Function to mint NFT or get existing NFT for a given geohash
 async fn get_or_mint_nft_square(nearest_geohash: &String) -> (Option<Nft>, bool) {
     match get_token_id_by_geohash(nearest_geohash) {
         Some(token_id) => {
@@ -69,10 +81,20 @@ async fn get_or_mint_nft_square(nearest_geohash: &String) -> (Option<Nft>, bool)
         None => {
             // Token ID does not exist, mint a new NFT
             ic_cdk::println!("GEOHASH_LIB.RS_New square detected: {:?}", nearest_geohash);
+
+            // Get the Bitcoin address
+            let bitcoin_canister_id = BASIC_BITCOIN_CANISTER_ID.with(|id| id.borrow().clone().expect("Bitcoin canister ID not set"));
+            let bitcoin_address = get_bitcoin_address(bitcoin_canister_id).await.expect("Failed to get Bitcoin address");
+            let bitcoin_wallet = BitcoinWallet {
+                bitcoin_address,
+                bitcoin_balance: 0,
+            };
+
             
             let properties = SquareProperties {
                 geohash: nearest_geohash.clone(),
                 metadata: "".to_string(), // Empty metadata, as we only want to store geohash
+                wallet: bitcoin_wallet,
             };
 
             // Get the principal of the caller
@@ -176,7 +198,30 @@ async fn get_or_mint_nft_square(nearest_geohash: &String) -> Option<Nft> {
 fn init() {
 
     // SET NFT_WALLET_CANISTER_ID AND DIP721_CANISTER_ID
-    let dip721_canister_id = "bkyz2-fmaaa-aaaaa-qaaaq-cai";
+    let dip721_canister_id = "br5f7-7uaaa-aaaaa-qaaca-cai";
+    let dip721_canister_principal = Principal::from_text(dip721_canister_id)
+        .expect("Invalid hardcoded DIP721_CANISTER_ID principal");
+    init_lookup_id(dip721_canister_principal);
+    init_mint_id(dip721_canister_principal);
+    ic_cdk::println!("NFT_WALLET_CANISTER_ID and DIP721_CANISTER_ID hardcoded and loaded successfully.");
+
+    // CLEAR STABLE STORAGE
+    GEOHASH_TO_TOKEN_ID.with(|map| *map.borrow_mut() = HashMap::new());
+    nft_mint::set_dip721_canister_id(None);
+
+    // Set BASIC_BITCOIN_CANISTER_ID
+    let basic_bitcoin_canister_id = "bkyz2-fmaaa-aaaaa-qaaaq-cai";
+    let basic_bitcoin_canister_principal = Principal::from_text(basic_bitcoin_canister_id)
+        .expect("Invalid BASIC_BITCOIN_CANISTER_ID principal");
+    BASIC_BITCOIN_CANISTER_ID.with(|id| *id.borrow_mut() = Some(basic_bitcoin_canister_principal));
+
+    // Logging to verify initialization
+    let stored_bitcoin_canister_id = BASIC_BITCOIN_CANISTER_ID.with(|id| id.borrow().clone());
+    ic_cdk::println!("Initialized BASIC_BITCOIN_CANISTER_ID: {:?}", stored_bitcoin_canister_id);
+
+    /*
+    // SET NFT_WALLET_CANISTER_ID AND DIP721_CANISTER_ID
+    let dip721_canister_id = "br5f7-7uaaa-aaaaa-qaaca-cai";
     let dip721_canister_principal = Principal::from_text(dip721_canister_id)
         .expect("Invalid hardcoded DIP721_CANISTER_ID principal");
     init_lookup_id(dip721_canister_principal);
@@ -188,7 +233,7 @@ fn init() {
     GEOHASH_TO_TOKEN_ID.with(|map| *map.borrow_mut() = HashMap::new());
     nft_mint::set_dip721_canister_id(None);
 
-    let dip721_canister_id = "bkyz2-fmaaa-aaaaa-qaaaq-cai";
+    //let dip721_canister_id = "bkyz2-fmaaa-aaaaa-qaaaq-cai";
     let dip721_canister_principal = Principal::from_text(dip721_canister_id)
         .expect("Invalid hardcoded DIP721_CANISTER_ID principal");
     init_lookup_id(dip721_canister_principal);
@@ -201,6 +246,7 @@ fn init() {
     let basic_bitcoin_canister_principal = Principal::from_text(basic_bitcoin_canister_id)
         .expect("Invalid BASIC_BITCOIN_CANISTER_ID principal");
     BASIC_BITCOIN_CANISTER_ID.with(|id| *id.borrow_mut() = Some(basic_bitcoin_canister_principal));
+    */
 }
 
 
@@ -212,8 +258,9 @@ fn pre_upgrade() {
 
     // Save the DIP721 canister ID and the geohash-to-token ID mapping to stable storage
     let dip721_id = nft_mint::get_dip721_canister_id_option();
+    let bitcoin_canister_id = BASIC_BITCOIN_CANISTER_ID.with(|id| id.borrow().clone());
     let geohash_to_token_id: Vec<(String, u64)> = GEOHASH_TO_TOKEN_ID.with(|map| map.borrow().clone().into_iter().collect());
-    ic_cdk::storage::stable_save((dip721_id, geohash_to_token_id)).expect("Failed to save to stable storage");
+    ic_cdk::storage::stable_save((dip721_id, bitcoin_canister_id, geohash_to_token_id)).expect("Failed to save to stable storage");
 }
 
 #[post_upgrade]
@@ -222,9 +269,15 @@ fn post_upgrade() {
     nft_mint::post_upgrade();
 
     // Restore the DIP721 canister ID and the geohash-to-token ID mapping from stable storage
+    let (dip721_id, bitcoin_canister_id, geohash_to_token_id): (Option<Principal>, Option<Principal>, Vec<(String, u64)>) = ic_cdk::storage::stable_restore().expect("Failed to restore from stable storage");
+    nft_mint::set_dip721_canister_id(dip721_id);
+    BASIC_BITCOIN_CANISTER_ID.with(|id| *id.borrow_mut() = bitcoin_canister_id);
+    GEOHASH_TO_TOKEN_ID.with(|map| *map.borrow_mut() = geohash_to_token_id.into_iter().collect());
+    /*
     let (dip721_id, geohash_to_token_id): (Option<Principal>, Vec<(String, u64)>) = ic_cdk::storage::stable_restore().expect("Failed to restore from stable storage");
     nft_mint::set_dip721_canister_id(dip721_id); 
     GEOHASH_TO_TOKEN_ID.with(|map| *map.borrow_mut() = geohash_to_token_id.into_iter().collect());
+    */
 }
 
 
@@ -421,15 +474,7 @@ async fn compute_area(geohash: String) -> String {
 }
 
 
-// Function to get the Bitcoin address
-#[update]
-async fn get_bitcoin_address_update() -> String {
-    let bitcoin_canister_id = BASIC_BITCOIN_CANISTER_ID.with(|id| id.borrow().clone().expect("Bitcoin canister ID not set"));
-    match get_bitcoin_address(bitcoin_canister_id).await {
-        Ok(address) => address,
-        Err(err) => format!("Failed to get Bitcoin address: {}", err),
-    }
-}
+
 
 // END METHODS
 

@@ -41,7 +41,7 @@ pub struct Nft {
 pub struct SquareProperties {
     pub geohash: String,
     pub metadata: String,
-    //pub wallet: Wallet, // Commented out for new use
+    pub wallet: BitcoinWallet,
 }
 
 // Struct representing a part of the metadata
@@ -102,12 +102,20 @@ pub enum ApiError {
     Other,
 }
 
+
 // Struct representing a wallet with different cryptocurrency balances
 #[derive(CandidType, Deserialize, Clone, Debug)]
 pub struct Wallet {
     pub ether: String,
     pub usdc: String,
     pub bitcoin: String,
+}
+
+// Struct representing a Bitcoin wallet with a Bitcoin address and balance
+#[derive(CandidType, Deserialize, Clone, Debug)]
+pub struct BitcoinWallet {
+    pub bitcoin_address: String,
+    pub bitcoin_balance: u64,
 }
 
 // Enum representing the result of a mint operation
