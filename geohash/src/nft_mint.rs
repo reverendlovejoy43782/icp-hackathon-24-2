@@ -7,12 +7,18 @@ use ic_cdk::export::candid::{CandidType, Deserialize, Principal, encode_args};
 use std::cell::RefCell;
 use std::collections::HashMap;
 use crate::types::{MetadataDesc, MetadataPart, MetadataPurpose, MetadataVal, MetadataKeyVal, MetadataResult, ApiError, SquareProperties, Wallet, BitcoinWallet, MintReceipt, MintResult}; // Import the common types
+// START NEW IMPORTs
+use crate::{get_dip721_canister_id, update_geohash_to_token_id, get_token_id_by_geohash};
+// END NEW IMPORTs
+
 
 // END IMPORTS AND PRAGMAS
 
 
 // START STATE
 
+// START LEGACY STATE
+/*
 thread_local! {
     static DIP721_CANISTER_ID: RefCell<Option<Principal>> = RefCell::new(None);
     static GEOHASH_TO_TOKEN_ID: RefCell<HashMap<String, u64>> = RefCell::new(HashMap::new());
@@ -78,11 +84,15 @@ pub fn get_token_id_by_geohash(geohash: &str) -> Option<u64> {
         map.borrow().get(geohash).cloned()
     })
 }
+*/
+// END LEGACY STATE
 
 // END STATE
 
 // START HELPER FUNCTIONS
 
+// START LEGACY HELPER FUNCTIONS
+/*
 // Helper function to get the DIP721 canister ID
 pub fn get_dip721_canister_id_option() -> Option<Principal> {
     DIP721_CANISTER_ID.with(|id| id.borrow().clone())
@@ -92,6 +102,8 @@ pub fn get_dip721_canister_id_option() -> Option<Principal> {
 pub fn set_dip721_canister_id(dip721_canister_id: Option<Principal>) {
     DIP721_CANISTER_ID.with(|id| *id.borrow_mut() = dip721_canister_id);
 }
+*/
+// END LEGACY HELPER FUNCTIONS
 
 
 // Create metadata for the NFT

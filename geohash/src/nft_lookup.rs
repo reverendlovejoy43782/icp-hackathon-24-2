@@ -7,7 +7,10 @@ use ic_cdk::export::candid::{CandidType, Deserialize, Principal};
 use std::cell::RefCell;
 use std::collections::HashMap;
 use crate::types::{MetadataDesc, Nft, MetadataPart, MetadataPartLookup, MetadataPurpose, MetadataVal, MetadataKeyVal, MetadataResult};
-use crate::nft_mint::get_token_id_by_geohash;
+//use crate::nft_mint::get_token_id_by_geohash;
+// START NEW IMPORTS
+use crate::{get_dip721_canister_id, get_token_id_by_geohash};
+// END NEW IMPORTS
 
 
 // END IMPORTS AND PRAGMAS
@@ -15,6 +18,8 @@ use crate::nft_mint::get_token_id_by_geohash;
 
 // START STATE
 
+// START LEGACY STATE
+/*
 thread_local! {
     static DIP721_CANISTER_ID: RefCell<Option<Principal>> = RefCell::new(None);
 }
@@ -40,6 +45,8 @@ fn get_dip721_canister_id() -> Principal {
         id.borrow().expect("DIP721_CANISTER_ID must be set")
     })
 }
+*/
+// END LEGACY STATE
 // END STATE
 
 // START HELPER FUNCTIONS

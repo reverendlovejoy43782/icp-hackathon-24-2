@@ -24,10 +24,14 @@ use crate::types::{Geolocation, AreaResponse, MetadataDesc, Nft, SquarePropertie
 use bitcoin::get_bitcoin_address;
 
 // Functions from nft_mint
-use nft_mint::{init_canister_id as init_mint_id, print_geohash_to_token_id_map, mint_nft, create_metadata, get_token_id_by_geohash};
+//use nft_mint::{init_canister_id as init_mint_id, print_geohash_to_token_id_map, mint_nft, create_metadata};
+use nft_mint::{mint_nft, create_metadata};
+
 
 // Functions from nft_lookup
-use nft_lookup::{init_canister_id as init_lookup_id, get_nft_by_geohash};
+//use nft_lookup::{init_canister_id as init_lookup_id, get_nft_by_geohash};
+use nft_lookup::{get_nft_by_geohash};
+
 
 // Functions from grid_match and grid_generator
 use grid_match::find_nearest_geohash_with_bounds;
@@ -43,18 +47,72 @@ use serde_json::json;
 
 // START LOCAL STORAGE
 
+// START NEW CODE
+thread_local! {
+    static DIP721_CANISTER_ID: RefCell<Option<Principal>> = RefCell::new(None);
+    static GEOHASH_TO_TOKEN_ID: RefCell<HashMap<String, u64>> = RefCell::new(HashMap::new());
+    static BASIC_BITCOIN_CANISTER_ID: RefCell<Option<Principal>> = RefCell::new(None);
+}
+// END NEW CODE
+
+// LEGACY CODE START (TO BE REMOVED)
+/*
 // Define the mapping of geohash to token ID using thread-local storage
 thread_local! {
     static GEOHASH_TO_TOKEN_ID: RefCell<HashMap<String, u64>> = RefCell::new(HashMap::new());
     static BASIC_BITCOIN_CANISTER_ID: RefCell<Option<Principal>> = RefCell::new(None); // Added for Bitcoin
 }
+// LEGACY CODE END (TO BE REMOVED)
+*/
+
 
 // END LOCAL STORAGE
 
 
 // START HELPER FUNCTIONS
 
+// START NEW CODE
 
+// Helper functions to get and set state
+pub fn set_dip721_canister_id(dip721_canister_id: Option<Principal>) {
+    DIP721_CANISTER_ID.with(|id| *id.borrow_mut() = dip721_canister_id);
+}
+
+pub fn get_dip721_canister_id() -> Principal {
+    DIP721_CANISTER_ID.with(|id| id.borrow().expect("DIP721_CANISTER_ID must be set"))
+}
+
+pub fn set_bitcoin_canister_id(bitcoin_canister_id: Option<Principal>) {
+    BASIC_BITCOIN_CANISTER_ID.with(|id| *id.borrow_mut() = bitcoin_canister_id);
+}
+
+pub fn get_bitcoin_canister_id() -> Principal {
+    BASIC_BITCOIN_CANISTER_ID.with(|id| id.borrow().expect("Bitcoin canister ID must be set"))
+}
+
+pub fn update_geohash_to_token_id(geohash: String, token_id: u64) {
+    GEOHASH_TO_TOKEN_ID.with(|map| map.borrow_mut().insert(geohash, token_id));
+}
+
+pub fn get_token_id_by_geohash(geohash: &str) -> Option<u64> {
+    GEOHASH_TO_TOKEN_ID.with(|map| map.borrow().get(geohash).cloned())
+}
+
+pub fn pre_upgrade() {
+    let dip721_id = DIP721_CANISTER_ID.with(|id| id.borrow().clone());
+    let bitcoin_canister_id = BASIC_BITCOIN_CANISTER_ID.with(|id| id.borrow().clone());
+    let geohash_to_token_id: Vec<(String, u64)> = GEOHASH_TO_TOKEN_ID.with(|map| map.borrow().clone().into_iter().collect());
+    ic_cdk::storage::stable_save((dip721_id, bitcoin_canister_id, geohash_to_token_id)).expect("Failed to save to stable storage");
+}
+
+pub fn post_upgrade() {
+    let (dip721_id, bitcoin_canister_id, geohash_to_token_id): (Option<Principal>, Option<Principal>, Vec<(String, u64)>) = ic_cdk::storage::stable_restore().expect("Failed to restore from stable storage");
+    DIP721_CANISTER_ID.with(|id| *id.borrow_mut() = dip721_id);
+    BASIC_BITCOIN_CANISTER_ID.with(|id| *id.borrow_mut() = bitcoin_canister_id);
+    GEOHASH_TO_TOKEN_ID.with(|map| *map.borrow_mut() = geohash_to_token_id.into_iter().collect());
+}
+
+// END NEW CODE
 
 // Function to get the Bitcoin address
 async fn get_bitcoin_address_update() -> String {
@@ -192,13 +250,35 @@ async fn get_or_mint_nft_square(nearest_geohash: &String) -> Option<Nft> {
 
 // START FUNCTIONS
 
+// Functions at init
+#[init]
+fn init() {
+    let dip721_canister_id = "bd3sg-teaaa-aaaaa-qaaba-cai";
+    let dip721_canister_principal = Principal::from_text(dip721_canister_id).expect("Invalid hardcoded DIP721_CANISTER_ID principal");
+    set_dip721_canister_id(Some(dip721_canister_principal));
 
+    let basic_bitcoin_canister_id = "bkyz2-fmaaa-aaaaa-qaaaq-cai";
+    let basic_bitcoin_canister_principal = Principal::from_text(basic_bitcoin_canister_id).expect("Invalid BASIC_BITCOIN_CANISTER_ID principal");
+    set_bitcoin_canister_id(Some(basic_bitcoin_canister_principal));
+
+    // Clear stable storage
+    GEOHASH_TO_TOKEN_ID.with(|map| *map.borrow_mut() = HashMap::new());
+    set_dip721_canister_id(None);
+
+    // Logging to verify initialization
+    let stored_bitcoin_canister_id = BASIC_BITCOIN_CANISTER_ID.with(|id| id.borrow().clone());
+    ic_cdk::println!("Initialized BASIC_BITCOIN_CANISTER_ID: {:?}", stored_bitcoin_canister_id);
+}
+
+
+// START LEGACY CODE (TO BE REMOVED)
+/*
 // Functions at init
 #[init]
 fn init() {
 
     // SET NFT_WALLET_CANISTER_ID AND DIP721_CANISTER_ID
-    let dip721_canister_id = "br5f7-7uaaa-aaaaa-qaaca-cai";
+    let dip721_canister_id = "bd3sg-teaaa-aaaaa-qaaba-cai";
     let dip721_canister_principal = Principal::from_text(dip721_canister_id)
         .expect("Invalid hardcoded DIP721_CANISTER_ID principal");
     init_lookup_id(dip721_canister_principal);
@@ -280,7 +360,8 @@ fn post_upgrade() {
     */
 }
 
-
+*/
+// END LEGACY CODE (TO BE REMOVED)
 
 // START METHODS
 
