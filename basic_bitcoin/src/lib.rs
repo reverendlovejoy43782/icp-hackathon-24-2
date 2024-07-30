@@ -9,6 +9,8 @@ use ic_cdk::api::management_canister::bitcoin::{
 use ic_cdk_macros::{init, post_upgrade, pre_upgrade, update};
 use std::cell::{Cell, RefCell};
 
+use std::borrow::BorrowMut;
+
 thread_local! {
     // The bitcoin network to connect to.
     //
@@ -74,6 +76,27 @@ pub async fn get_current_fee_percentiles() -> Vec<MillisatoshiPerByte> {
 }
 
 /// Returns the P2PKH address of this canister at a specific derivation path.
+
+// START NEW CODE
+fn geohash_to_derivation_path(geohash: &str) -> Vec<Vec<u8>> {
+    geohash.as_bytes().chunks(4).map(|chunk| chunk.to_vec()).collect()
+}
+
+#[update]
+pub async fn get_p2pkh_address(geohash: String) -> String {
+    let derivation_path = geohash_to_derivation_path(&geohash);
+
+    // Use the existing key name and network
+    let key_name = KEY_NAME.with(|kn| kn.borrow().to_string());
+    let network = NETWORK.with(|n| n.get());
+
+    // Generate and return the address
+    bitcoin_wallet::get_p2pkh_address(network, key_name, derivation_path).await
+}
+// END NEW CODE
+
+// START OLD CODE   
+/*
 #[update]
 pub async fn get_p2pkh_address() -> String {
     let derivation_path = DERIVATION_PATH.with(|d| d.clone());
@@ -81,6 +104,8 @@ pub async fn get_p2pkh_address() -> String {
     let network = NETWORK.with(|n| n.get());
     bitcoin_wallet::get_p2pkh_address(network, key_name, derivation_path).await
 }
+*/
+// END OLD CODE
 
 /// Sends the given amount of bitcoin from this canister to the given address.
 /// Returns the transaction ID.

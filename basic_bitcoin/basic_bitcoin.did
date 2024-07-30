@@ -33,7 +33,7 @@ type get_utxos_response = record {
 };
 
 service : (network) -> {
-    "get_p2pkh_address": () -> (bitcoin_address);
+    "get_p2pkh_address": (text) -> (bitcoin_address);
 
     "get_balance": (address: bitcoin_address) -> (satoshi);
 

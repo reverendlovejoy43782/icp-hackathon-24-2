@@ -96,7 +96,7 @@ pub fn post_upgrade() {
     ic_cdk::println!("Post-upgrade BASIC_BITCOIN_CANISTER_ID: {:?}", bitcoin_canister_id);
 }
 
-
+/*
 // Function to get the Bitcoin address
 async fn get_bitcoin_address_update() -> String {
     let bitcoin_canister_id = BASIC_BITCOIN_CANISTER_ID.with(|id| id.borrow().clone().expect("Bitcoin canister ID not set"));
@@ -106,6 +106,7 @@ async fn get_bitcoin_address_update() -> String {
         Err(err) => format!("Failed to get Bitcoin address: {}", err),
     }
 }
+*/
 
 // Function to mint NFT or get existing NFT for a given geohash
 async fn get_or_mint_nft_square(nearest_geohash: &String) -> (Option<Nft>, bool) {
@@ -129,7 +130,8 @@ async fn get_or_mint_nft_square(nearest_geohash: &String) -> (Option<Nft>, bool)
             let bitcoin_canister_id = get_bitcoin_canister_id();
             ic_cdk::println!("Retrieved Bitcoin canister ID: {:?}", bitcoin_canister_id);
             
-            let bitcoin_address = get_bitcoin_address(bitcoin_canister_id).await.expect("Failed to get Bitcoin address");
+            let bitcoin_address = get_bitcoin_address(bitcoin_canister_id, nearest_geohash.clone()).await.expect("Failed to get Bitcoin address");
+            //let bitcoin_address = get_bitcoin_address(bitcoin_canister_id).await.expect("Failed to get Bitcoin address");
             ic_cdk::println!("Retrieved Bitcoin address: {:?}", bitcoin_address);
             /*
             // Get the Bitcoin address
