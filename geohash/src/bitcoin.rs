@@ -1,6 +1,5 @@
 use ic_cdk::api::call::call;
 use ic_cdk::export::Principal;
-use crate::types::Wallet;
 
 pub async fn get_bitcoin_address(basic_bitcoin_canister_id: Principal) -> Result<String, String> {
     let (address,): (String,) = call(basic_bitcoin_canister_id, "get_p2pkh_address", ())

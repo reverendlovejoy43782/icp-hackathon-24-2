@@ -3,62 +3,14 @@
 
 // START IMPORTS AND PRAGMAS
 use ic_cdk::api::call::call;
-use ic_cdk::export::candid::{CandidType, Deserialize, Principal};
-use std::cell::RefCell;
-use std::collections::HashMap;
-use crate::types::{MetadataDesc, Nft, MetadataPart, MetadataPartLookup, MetadataPurpose, MetadataVal, MetadataKeyVal, MetadataResult};
-//use crate::nft_mint::get_token_id_by_geohash;
-// START NEW IMPORTS
+use ic_cdk::export::candid::{Principal};
+use crate::types::{Nft, MetadataPartLookup, MetadataKeyVal, MetadataResult};
 use crate::{get_dip721_canister_id, get_token_id_by_geohash};
-// END NEW IMPORTS
-
 
 // END IMPORTS AND PRAGMAS
 
 
-// START STATE
-
-// START LEGACY STATE
-/*
-thread_local! {
-    static DIP721_CANISTER_ID: RefCell<Option<Principal>> = RefCell::new(None);
-}
-
-// Function to set the canister ID from the init function in lib.rs
-pub fn init_canister_id(dip721_canister_id: Principal) {
-    DIP721_CANISTER_ID.with(|id| *id.borrow_mut() = Some(dip721_canister_id));
-}
-
-pub fn pre_upgrade() {
-    let dip721_id = DIP721_CANISTER_ID.with(|id| id.borrow().clone());
-    ic_cdk::storage::stable_save((dip721_id,)).expect("Failed to save canister ID to stable storage");
-}
-
-pub fn post_upgrade() {
-    let (dip721_id,): (Option<Principal>,) = ic_cdk::storage::stable_restore().expect("Failed to restore canister ID from stable storage");
-    DIP721_CANISTER_ID.with(|id| *id.borrow_mut() = dip721_id);
-}
-
-// Function to retrieve the DIP721 canister ID from the state
-fn get_dip721_canister_id() -> Principal {
-    DIP721_CANISTER_ID.with(|id| {
-        id.borrow().expect("DIP721_CANISTER_ID must be set")
-    })
-}
-*/
-// END LEGACY STATE
-// END STATE
-
-// START HELPER FUNCTIONS
-
-
-
-// END HELPER FUNCTIONS
-
-
 // START FUNCTIONS
-
-
 
 pub async fn get_nft_by_geohash(geohash: String) -> Result<Nft, String> {
     // Get the token ID from the geohash-to-token ID mapping

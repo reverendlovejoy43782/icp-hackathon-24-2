@@ -3,108 +3,14 @@
 
 // START IMPORTS AND PRAGMAS
 use ic_cdk::api::call::call;
-use ic_cdk::export::candid::{CandidType, Deserialize, Principal, encode_args};
-use std::cell::RefCell;
+use ic_cdk::export::candid::{Principal};
 use std::collections::HashMap;
-use crate::types::{MetadataDesc, MetadataPart, MetadataPurpose, MetadataVal, MetadataKeyVal, MetadataResult, ApiError, SquareProperties, Wallet, BitcoinWallet, MintReceipt, MintResult}; // Import the common types
-// START NEW IMPORTs
-use crate::{get_dip721_canister_id, update_geohash_to_token_id, get_token_id_by_geohash};
-// END NEW IMPORTs
-
+use crate::types::{MetadataDesc, MetadataPart, MetadataPurpose, MetadataVal, SquareProperties, MintReceipt}; // Import the common types
+use crate::{get_dip721_canister_id, update_geohash_to_token_id};
 
 // END IMPORTS AND PRAGMAS
 
-
-// START STATE
-
-// START LEGACY STATE
-/*
-thread_local! {
-    static DIP721_CANISTER_ID: RefCell<Option<Principal>> = RefCell::new(None);
-    static GEOHASH_TO_TOKEN_ID: RefCell<HashMap<String, u64>> = RefCell::new(HashMap::new());
-}
-
-// Function to set the canister ID from the init function in lib.rs
-pub fn init_canister_id(dip721_canister_id: Principal) {
-    DIP721_CANISTER_ID.with(|id| *id.borrow_mut() = Some(dip721_canister_id));
-}
-
-pub fn pre_upgrade() {
-    let dip721_id = DIP721_CANISTER_ID.with(|id| id.borrow().clone());
-    let geohash_to_token_id: Vec<(String, u64)> = GEOHASH_TO_TOKEN_ID.with(|map| map.borrow().clone().into_iter().collect());
-    ic_cdk::storage::stable_save((dip721_id, geohash_to_token_id)).expect("Failed to save to stable storage");
-}
-
-pub fn post_upgrade() {
-    let result: Result<(Option<Principal>, Vec<(String, u64)>), _> = ic_cdk::storage::stable_restore();
-    match result {
-        Ok((dip721_id, geohash_to_token_id)) => {
-            ic_cdk::println!("Restored dip721_id: {:?}", dip721_id);
-            ic_cdk::println!("Restored geohash_to_token_id: {:?}", geohash_to_token_id);
-            DIP721_CANISTER_ID.with(|id| *id.borrow_mut() = dip721_id);
-            GEOHASH_TO_TOKEN_ID.with(|map| *map.borrow_mut() = geohash_to_token_id.into_iter().collect());
-        },
-        Err(err) => {
-            ic_cdk::println!("Failed to restore: {:?}", err);
-            panic!("Failed to restore canister ID and geohash-to-token ID mapping from stable storage: {:?}", err);
-        }
-    }
-}
-
-
-// Function to retrieve the DIP721 canister ID from the state
-pub fn get_dip721_canister_id() -> Principal {
-    DIP721_CANISTER_ID.with(|id| {
-        id.borrow().expect("DIP721_CANISTER_ID must be set")
-    })
-}
-
-// Function to update the geohash-to-token ID mapping
-pub fn update_geohash_to_token_id(geohash: String, token_id: u64) {
-    GEOHASH_TO_TOKEN_ID.with(|map| {
-        map.borrow_mut().insert(geohash, token_id);
-    });
-}
-
-// Function to print the geohash-to-token ID map
-pub fn print_geohash_to_token_id_map() {
-    GEOHASH_TO_TOKEN_ID.with(|map| {
-        for (geohash, token_id) in map.borrow().iter() {
-            ic_cdk::println!("Geohash: {}, Token ID: {}", geohash, token_id);
-        }
-    });
-}
-
-
-
-
-// Function to get the token ID by geohash
-pub fn get_token_id_by_geohash(geohash: &str) -> Option<u64> {
-    GEOHASH_TO_TOKEN_ID.with(|map| {
-        map.borrow().get(geohash).cloned()
-    })
-}
-*/
-// END LEGACY STATE
-
-// END STATE
-
 // START HELPER FUNCTIONS
-
-// START LEGACY HELPER FUNCTIONS
-/*
-// Helper function to get the DIP721 canister ID
-pub fn get_dip721_canister_id_option() -> Option<Principal> {
-    DIP721_CANISTER_ID.with(|id| id.borrow().clone())
-}
-
-// Helper function to set the DIP721 canister ID
-pub fn set_dip721_canister_id(dip721_canister_id: Option<Principal>) {
-    DIP721_CANISTER_ID.with(|id| *id.borrow_mut() = dip721_canister_id);
-}
-*/
-// END LEGACY HELPER FUNCTIONS
-
 
 // Create metadata for the NFT
 pub fn create_metadata(properties: SquareProperties) -> MetadataDesc {
@@ -125,28 +31,6 @@ pub fn create_metadata(properties: SquareProperties) -> MetadataDesc {
 
     metadata_print
 }
-
-
-/*
-pub fn create_metadata(properties: SquareProperties) -> MetadataDesc {
-    // Create a HashMap with only the geohash
-    let mut key_val_data = HashMap::new();
-    key_val_data.insert("geohash".to_string(), MetadataVal::TextContent(properties.geohash));
-
-    // Define MetadataPart with minimal fields
-    let metadata_print = vec![MetadataPart {
-        purpose: MetadataPurpose::Rendered, // Use Rendered as it's the simplest purpose
-        key_val_data, // Only contains geohash
-        data: vec![], // Empty blob data
-    }];
-
-    ic_cdk::println!("GEOHASH_NFT_MINT_Created metadata: {:?}", metadata_print);
-
-    metadata_print
-}
-*/
-
-
 
 // END HELPER FUNCTIONS
 
@@ -187,6 +71,5 @@ pub async fn mint_nft(
         Err(err) => Err(format!("GEOHASH_NFT_MINT_Failed to mint NFT: {:?}", err)),
     }
 }
-
 
 // END FUNCTIONS
