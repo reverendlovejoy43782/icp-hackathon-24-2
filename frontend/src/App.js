@@ -139,107 +139,124 @@ function App() {
     }
   };
 
-
+  
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Geohash Frontend</h1>
-
-      {location && bounds && (
-        <div className="mb-6">
-          <GeolocationMap location={location} bounds={bounds} geohash={mapGeohash} isUserLocation={isUserLocation} />
+    <>
+      {/* Top navigation bar */}
+      <div className="bg-indigo-600 text-white py-4">
+        <div className="container mx-auto flex justify-center">
+          {/* Button to reset the view to default */}
+          <button onClick={() => window.location.reload()} className="text-xl font-semibold hover:text-gray-300">
+            A datalayer of the world
+          </button>
         </div>
-      )}
-
-      <button
-        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700 mb-4"
-        onClick={handleFetchGeolocation}
-      >
-        Fetch Geolocation
-      </button>
-      <div className="mb-6">
-        <h2 className="text-xl mb-2">Input Geolocation</h2>
-        <input
-          className="border p-2 mb-2 w-full"
-          type="number"
-          placeholder="Latitude"
-          value={latitude}
-          onChange={(e) => setLatitude(e.target.value)}
-        />
-        <input
-          className="border p-2 mb-2 w-full"
-          type="number"
-          placeholder="Longitude"
-          value={longitude}
-          onChange={(e) => setLongitude(e.target.value)}
-        />
-        <button
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
-          onClick={handleGeolocationSubmit}
-        >
-          Submit Geolocation
-        </button>
       </div>
-      <div className="mb-6">
-        <h2 className="text-xl mb-2">Input Geohash</h2>
-        <input
-          className="border p-2 mb-2 w-full"
-          type="text"
-          placeholder="Geohash"
-          value={geohash}
-          onChange={(e) => setGeohash(e.target.value)}
-        />
-        <button
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
-          onClick={handleGeohashSubmit}
-        >
-          Submit Geohash
-        </button>
-      </div>
-      {response && (
-        <div className="mb-6">
-          <h2 className="text-xl mb-2">Response</h2>
-          <div className="bg-gray-100 p-4 rounded">
-            {response.created ? (
-              <p className="text-green-500 font-bold">NFT created for square {response.geohash}</p>
-            ) : (
-              <p className="text-blue-500 font-bold">NFT exists for square {response.geohash}</p>
+  
+      {/* Main content section */}
+      <div className="isolate bg-white">
+        <main>
+          <div className="container mx-auto p-4">
+  
+            {location && bounds && (
+              <div className="mb-6">
+                <GeolocationMap location={location} bounds={bounds} geohash={mapGeohash} isUserLocation={isUserLocation} />
+              </div>
             )}
-            <table className="table-auto w-full mt-4">
-              <thead>
-                <tr>
-                  <th className="px-4 py-2">Dimension</th>
-                  <th className="px-4 py-2">Value</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td className="border px-4 py-2">Latitude Start</td>
-                  <td className="border px-4 py-2">{response.lat_start}</td>
-                </tr>
-                <tr>
-                  <td className="border px-4 py-2">Latitude End</td>
-                  <td className="border px-4 py-2">{response.lat_end}</td>
-                </tr>
-                <tr>
-                  <td className="border px-4 py-2">Longitude Start</td>
-                  <td className="border px-4 py-2">{response.lon_start}</td>
-                </tr>
-                <tr>
-                  <td className="border px-4 py-2">Longitude End</td>
-                  <td className="border px-4 py-2">{response.lon_end}</td>
-                </tr>
-              </tbody>
-            </table>
+  
+            {response && (
+              <div className="mt-10">
+                {response.created ? (
+                  <p className="text-green-500 font-bold">NFT for this square created with Token ID {response.nft_square.token_id}</p>
+                ) : (
+                  <p className="text-blue-500 font-bold">NFT for square exists with Token ID {response.nft_square.token_id}</p>
+                )}
+                <div className="relative overflow-x-auto">
+                  <table className="w-full text-sm text-left text-gray-500">
+                    <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                      <tr>
+                        <th scope="col" className="px-6 py-3">Dimension</th>
+                        <th scope="col" className="px-6 py-3">Value</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="odd:bg-white even:bg-gray-50 border-b">
+                        <th scope="row" className="px-6 py-4 font-medium text-gray-900">Geohash</th>
+                        <td className="px-6 py-4">{response.geohash}</td>
+                      </tr>
+                      <tr className="odd:bg-white even:bg-gray-50 border-b">
+                        <th scope="row" className="px-6 py-4 font-medium text-gray-900">Bitcoin Address</th>
+                        <td className="px-6 py-4">{response.nft_square.metadata[0].key_val_data.find(kv => kv.key === 'bitcoin_address').val.TextContent}</td>
+                      </tr>
+                      <tr className="odd:bg-white even:bg-gray-50 border-b">
+                        <th scope="row" className="px-6 py-4 font-medium text-gray-900">Bitcoin Balance</th>
+                        <td className="px-6 py-4">{response.nft_square.metadata[0].key_val_data.find(kv => kv.key === 'bitcoin_balance').val.Nat64Content}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+  
+            <div className="mb-6 mt-10">
+              <h2 className="text-xl mb-2">Input Geolocation</h2>
+              <input
+                className="border p-2 mb-2 w-full"
+                type="number"
+                placeholder="Latitude"
+                value={latitude}
+                onChange={(e) => setLatitude(e.target.value)}
+              />
+              <input
+                className="border p-2 mb-2 w-full"
+                type="number"
+                placeholder="Longitude"
+                value={longitude}
+                onChange={(e) => setLongitude(e.target.value)}
+              />
+              <button
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
+                onClick={handleGeolocationSubmit}
+              >
+                Submit Geolocation
+              </button>
+            </div>
+  
+            <div className="mb-6">
+              <h2 className="text-xl mb-2">Input Geohash</h2>
+              <input
+                className="border p-2 mb-2 w-full"
+                type="text"
+                placeholder="Geohash"
+                value={geohash}
+                onChange={(e) => setGeohash(e.target.value)}
+              />
+              <button
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
+                onClick={handleGeohashSubmit}
+              >
+                Submit Geohash
+              </button>
+            </div>
+  
+            <div className="flex justify-center items-center mt-10 space-x-4">
+              <button
+                className="rounded-md bg-indigo-600 px-3.5 py-1.5 text-base font-semibold leading-7 text-white shadow-sm hover:bg-indigo-500"
+                onClick={handleFetchGeolocation}
+              >
+                Fetch Geolocation
+              </button>
+            </div>
+  
+            {error && (
+              <div className="mb-6">
+                <h2 className="text-xl mb-2">Error</h2>
+                <pre className="bg-red-100 text-red-700 p-4 rounded">{error}</pre>
+              </div>
+            )}
           </div>
-        </div>
-      )}
-      {error && (
-        <div className="mb-6">
-          <h2 className="text-xl mb-2">Error</h2>
-          <pre className="bg-red-100 text-red-700 p-4 rounded">{error}</pre>
-        </div>
-      )}
-    </div>
+        </main>
+      </div>
+    </>
   );
 }
 

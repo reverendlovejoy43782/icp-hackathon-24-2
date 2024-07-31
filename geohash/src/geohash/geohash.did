@@ -39,11 +39,20 @@ type Wallet = record {
     usdc: text;
     bitcoin: text;
 };
+
+// Type for bitcoin wallet of a square
+type BitcoinWallet = record {
+    bitcoin_address: text;
+    bitcoin_balance: nat64;
+};
+
+// All information about a square
 type SquareProperties = record {
     geohash: text;
     metadata: text;
-    wallet: Wallet;
+    wallet: BitcoinWallet;
 };
+
 type Geolocation = record { 
     latitude: float64; 
     longitude: float64; 

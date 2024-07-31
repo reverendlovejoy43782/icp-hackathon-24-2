@@ -15,13 +15,13 @@ export const idlFactory = ({ IDL }) => {
   });
 
   const MetadataPart = IDL.Record({
-    purpose: IDL.Text,
+    purpose: IDL.Variant({ Preview: IDL.Null, Rendered: IDL.Null }),
     key_val_data: IDL.Vec(MetadataKeyVal),
     data: IDL.Vec(IDL.Nat8),
   });
 
   const MetadataLookupPart = IDL.Record({
-    purpose: IDL.Text,
+    purpose: IDL.Variant({ Preview: IDL.Null, Rendered: IDL.Null }),
     key_val_data: IDL.Vec(MetadataKeyVal),
     data: IDL.Vec(IDL.Nat8),
   });
@@ -35,16 +35,15 @@ export const idlFactory = ({ IDL }) => {
     content: IDL.Vec(IDL.Nat8),
   });
 
-  const Wallet = IDL.Record({
-    ether: IDL.Text,
-    usdc: IDL.Text,
-    bitcoin: IDL.Text,
+  const BitcoinWallet = IDL.Record({
+    bitcoin_address: IDL.Text,
+    bitcoin_balance: IDL.Nat64,
   });
 
   const SquareProperties = IDL.Record({
     geohash: IDL.Text,
     metadata: IDL.Text,
-    wallet: Wallet,
+    wallet: BitcoinWallet,
   });
 
   const Geolocation = IDL.Record({
@@ -64,9 +63,9 @@ export const idlFactory = ({ IDL }) => {
 
   return IDL.Service({
     compute_area: IDL.Func([IDL.Text], [IDL.Text], []),
-    //compute_area: IDL.Func([IDL.Text], [AreaResponse], []),
+    //compute_area: IDL.Func([IDL.Text], [AreaResponse], []), // Uncomment if returning AreaResponse
     compute_geohash: IDL.Func([Geolocation], [IDL.Text], []),
-    //compute_geohash: IDL.Func([Geolocation], [AreaResponse], []),
+    //compute_geohash: IDL.Func([Geolocation], [AreaResponse], []), // Uncomment if returning AreaResponse
   });
 };
 

@@ -194,14 +194,14 @@ async fn get_or_mint_nft_square(nearest_geohash: &String) -> (Option<Nft>, bool)
 // Functions at init
 #[init]
 fn init() {
-    let dip721_canister_id = "br5f7-7uaaa-aaaaa-qaaca-cai";
+    let dip721_canister_id = "be2us-64aaa-aaaaa-qaabq-cai";
     ic_cdk::println!("Initializing with DIP721_CANISTER_ID: {:?}", dip721_canister_id);
     let dip721_canister_principal = Principal::from_text(dip721_canister_id).expect("Invalid hardcoded DIP721_CANISTER_ID principal");
     set_dip721_canister_id(Some(dip721_canister_principal));
     ic_cdk::println!("DIP721_CANISTER_ID set to: {:?}", dip721_canister_principal);
 
 
-    let basic_bitcoin_canister_id = "be2us-64aaa-aaaaa-qaabq-cai";
+    let basic_bitcoin_canister_id = "bkyz2-fmaaa-aaaaa-qaaaq-cai";
     ic_cdk::println!("Initializing with BASIC_BITCOIN_CANISTER_ID: {:?}", basic_bitcoin_canister_id);
     let basic_bitcoin_canister_principal = Principal::from_text(basic_bitcoin_canister_id).expect("Invalid BASIC_BITCOIN_CANISTER_ID principal");
     set_bitcoin_canister_id(Some(basic_bitcoin_canister_principal));

@@ -43,10 +43,17 @@ export interface Wallet {
   bitcoin: string;
 }
 
+
+export interface BitcoinWallet {
+  bitcoin_address: string;
+  bitcoin_balance: bigint;
+}
+
+
 export interface SquareProperties {
   geohash: string;
   metadata: string;
-  wallet: Wallet;
+  wallet: BitcoinWallet;
 }
 
 export interface Geolocation {
