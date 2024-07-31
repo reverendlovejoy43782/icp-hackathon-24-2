@@ -14,6 +14,8 @@ use serde_bytes::ByteBuf;
 // START NEW IMPORT
 use base32::Alphabet::RFC4648;
 use base32::encode;
+use data_encoding::BASE32_NOPAD;
+use crc::{Crc, CRC_32_ISO_HDLC};
 // END NEW IMPORT
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -32,6 +34,171 @@ impl AsRef<PublicKey> for EthereumWallet {
 
 // START NEW CODE
 
+fn pad_and_encode_base32(input_str: &str, desired_length: usize) -> String {
+    // Ensure input_str contains only valid Base32 characters
+    let sanitized_input: String = input_str
+        .chars()
+        .filter(|c| "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567".contains(*c))
+        .collect();
+
+    // Calculate the bits needed for desired Base32 length
+    let required_bits = desired_length * 5;
+    let current_bits = sanitized_input.len() * 8;
+    let padding_bits_needed = required_bits as isize - current_bits as isize;
+
+    // Calculate the padding length needed
+    let padding_length = ((padding_bits_needed + 7) / 8).max(0) as usize; // Round up to full bytes
+
+    // Add padding characters to the input string
+    let padded_input_str = format!("{}{}", sanitized_input, "A".repeat(padding_length));
+
+    // Base32 encode the padded input string
+    let base32_encoded = BASE32_NOPAD.encode(padded_input_str.as_bytes());
+
+    // Ensure the encoded string is exactly the desired length
+    let truncated_base32: String = base32_encoded.chars().take(desired_length).collect();
+
+    truncated_base32
+}
+
+
+fn geohash_to_principal(geohash: &str) -> Principal {
+    // Ensure geohash is valid Base32 input
+    let mut invalid_chars = vec![];
+
+    for c in geohash.chars() {
+        if !"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567".contains(c) {
+            invalid_chars.push(c);
+        }
+    }
+
+    if !invalid_chars.is_empty() {
+        panic!(
+            "Geohash contains invalid characters for Base32 encoding: {:?}",
+            invalid_chars
+        );
+    }
+
+    // Convert the geohash to a base32 string and pad it
+    let base32_geohash = pad_and_encode_base32(geohash, 27);
+
+    // Log the base32 encoded geohash
+    ic_cdk::println!("Base32 encoded geohash: {}", base32_geohash);
+
+    // Validate the base32 encoded geohash length
+    if base32_geohash.len() != 27 {
+        panic!("Invalid geohash length: {}", base32_geohash.len());
+    }
+
+    // Convert the base32 string to a Principal
+    match Principal::from_text(&base32_geohash) {
+        Ok(principal) => principal,
+        Err(e) => panic!("Invalid geohash format: {}", e),
+    }
+}
+/*
+fn geohash_to_principal(geohash: &str) -> Principal {
+    // Ensure geohash is valid Base32 input
+    for c in geohash.chars() {
+        if !"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567".contains(c) {
+            panic!("Geohash contains invalid characters for Base32 encoding.");
+        }
+    }
+
+    // Convert the geohash to a base32 string and pad it
+    let base32_geohash = pad_and_encode_base32(geohash, 27);
+
+    // Log the base32 encoded geohash
+    ic_cdk::println!("Base32 encoded geohash: {}", base32_geohash);
+
+    // Validate the base32 encoded geohash length
+    if base32_geohash.len() != 27 {
+        panic!("Invalid geohash length: {}", base32_geohash.len());
+    }
+
+    // Calculate CRC32 checksum
+    let crc32 = Crc::<u32>::new(&CRC_32_ISO_HDLC);
+    let checksum = crc32.checksum(base32_geohash.as_bytes());
+
+    // Prepend the checksum to the base32 encoded geohash
+    let mut encoded_with_checksum = format!("{:08x}{}", checksum, base32_geohash);
+
+    // Convert to base32
+    let base32_with_checksum = BASE32_NOPAD.encode(encoded_with_checksum.as_bytes());
+
+    // Ensure the encoded string is exactly 32 characters
+    if base32_with_checksum.len() != 32 {
+        panic!("Invalid base32 encoded length: {}", base32_with_checksum.len());
+    }
+
+    // Group the encoded string by 5 characters
+    let grouped_base32: String = base32_with_checksum
+        .chars()
+        .collect::<Vec<_>>()
+        .chunks(5)
+        .map(|chunk| chunk.iter().collect::<String>())
+        .collect::<Vec<_>>()
+        .join("-");
+
+    // Convert the grouped string to lowercase
+    let grouped_base32 = grouped_base32.to_lowercase();
+
+    // Convert the base32 string to a Principal
+    match Principal::from_text(&grouped_base32) {
+        Ok(principal) => principal,
+        Err(e) => panic!("Invalid geohash format: {}", e),
+    }
+}
+*/
+/*
+fn sanitize_to_base32(input_str: &str) -> String {
+    // Base32 alphabet: A-Z and 2-7
+    let base32_alphabet: Vec<char> = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567".chars().collect();
+    // Sanitize input by replacing invalid characters with 'A' (valid Base32 character)
+    input_str.chars()
+        .map(|c| if base32_alphabet.contains(&c.to_ascii_uppercase()) { c.to_ascii_uppercase() } else { 'A' })
+        .collect()
+}
+
+fn pad_and_encode_base32(input_str: &str, desired_length: usize) -> String {
+    // Sanitize input to ensure it contains only valid Base32 characters
+    let sanitized_input = sanitize_to_base32(input_str);
+
+    // Calculate the bits needed for desired Base32 length
+    let required_bits = desired_length * 5;
+    let current_bits = sanitized_input.len() * 8;
+    let padding_bits_needed = required_bits as isize - current_bits as isize;
+
+    // Calculate the padding length needed
+    let padding_length = ((padding_bits_needed + 7) / 8).max(0) as usize; // Round up to full bytes
+
+    // Add padding characters (from Base32 alphabet) to the input string
+    let padded_input_str = format!("{}{}", sanitized_input, "A".repeat(padding_length));
+
+    // Base32 encode the padded input string
+    let base32_encoded = BASE32_NOPAD.encode(padded_input_str.as_bytes());
+
+    // Ensure the encoded string is exactly the desired length
+    let truncated_base32: String = base32_encoded.chars().take(desired_length).collect();
+
+    // Convert to lowercase
+    let truncated_base32 = truncated_base32.to_lowercase();
+
+    // Split the truncated string into parts and join with hyphens
+    let parts = [
+        &truncated_base32[0..5],
+        &truncated_base32[5..10],
+        &truncated_base32[10..15],
+        &truncated_base32[15..20],
+        &truncated_base32[20..25],
+        &truncated_base32[25..27],
+    ];
+    format!("{}-{}-{}-{}-{}", parts[0], parts[1], parts[2], parts[3], &parts[4][0..3])
+}
+
+
+///////
+//////
 fn pad_and_encode_base32(input_str: &str, desired_length: usize) -> String {
     // Calculate the bits needed for desired Base32 length
     let required_bits = desired_length * 5;
@@ -64,7 +231,8 @@ fn pad_and_encode_base32(input_str: &str, desired_length: usize) -> String {
     ];
     format!("{}-{}-{}-{}-{}", parts[0], parts[1], parts[2], parts[3], &parts[4][0..3])
 }
-
+*/
+/*
 fn geohash_to_principal(geohash: &str) -> Principal {
     // Convert the geohash to a base32 string
     // concadenate geohash with a string of 5 characters
@@ -92,7 +260,7 @@ fn geohash_to_principal(geohash: &str) -> Principal {
     // Convert the base32 string to a Principal
     //Principal::from_text(base32_geohash).expect("Invalid geohash format")
 }
-
+*/
 fn create_ethereum_wallet(geohash: &str, public_key: EcdsaPublicKey) -> EthereumWallet {
     let owner = geohash_to_principal(geohash);
     EthereumWallet {
