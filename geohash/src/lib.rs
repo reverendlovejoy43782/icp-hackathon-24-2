@@ -6,6 +6,7 @@
 // Modules
 mod types;
 mod bitcoin;
+mod ethereum;
 mod nft_mint;
 mod nft_lookup;
 mod area_generator;
@@ -17,10 +18,13 @@ use ic_cdk::export::Principal;
 use ic_cdk_macros::*;
 
 // Types
-use crate::types::{Geolocation, Nft, SquareProperties, BitcoinWallet};
+use crate::types::{Geolocation, Nft, SquareProperties, GetEthereumAddressInput, BitcoinWallet};
 
 // Functions from bitcoin
 use bitcoin::get_bitcoin_address;
+
+// Functions from ethereum
+use ethereum::get_ethereum_address;
 
 // Functions from nft_mint
 use nft_mint::{mint_nft, create_metadata};
@@ -40,6 +44,16 @@ use std::collections::HashMap;
 use serde_json::json;
 
 // END IMPORTS AND PRAGMAS
+
+
+// START TEST METHOD
+
+#[update]
+async fn fetch_ethereum_address(input: GetEthereumAddressInput) -> Result<String, String> {
+    get_ethereum_address(input.canister_id, input.geohash).await
+}
+
+// END TEST METHOD
 
 
 // START LOCAL STORAGE

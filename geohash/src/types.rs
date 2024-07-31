@@ -102,6 +102,12 @@ pub enum ApiError {
     Other,
 }
 
+// Struct representing the input for getting an Ethereum address
+#[derive(CandidType, Deserialize)]
+pub struct GetEthereumAddressInput {
+    pub canister_id: Principal,
+    pub geohash: String,
+}
 
 // Struct representing a wallet with different cryptocurrency balances
 #[derive(CandidType, Deserialize, Clone, Debug)]

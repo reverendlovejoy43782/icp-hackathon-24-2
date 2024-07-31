@@ -66,7 +66,14 @@ type AreaResponse = record {
     nft_square: opt Nft; 
     created: bool;
 };
+
+type GetEthereumAddressInput = record {
+    canister_id: principal;
+    geohash: text;
+};
+
 service : {
     compute_geohash: (Geolocation) -> (text);
     compute_area: (text) -> (text);
+    fetch_ethereum_address: (GetEthereumAddressInput) -> (result: variant { Ok: text; Err: text });
 }
