@@ -3,7 +3,7 @@
 
 // START IMPORTS AND PRAGMAS
 use ic_cdk::api::call::call;
-use ic_cdk::export::candid::{Principal};
+use candid::{Principal};
 use crate::types::{Nft, MetadataPartLookup, MetadataKeyVal, MetadataResult};
 use crate::{get_dip721_canister_id, get_token_id_by_geohash};
 

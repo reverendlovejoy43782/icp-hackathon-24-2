@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // (C) 2024 Thomas Magerl
 
-use ic_cdk::export::candid::{CandidType, Deserialize};
+use candid::{Principal, Deserialize, CandidType};
 
 
 #[derive(Debug, CandidType, Deserialize)]

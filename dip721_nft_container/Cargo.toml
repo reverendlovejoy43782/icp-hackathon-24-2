@@ -4,8 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-ic-cdk = "0.5.7"
-ic-cdk-macros = "0.5.7"
+ic-cdk = "0.15.0"
+#ic-cdk = "0.5.7"
+ic-cdk-macros = "0.15.0"
+#ic-cdk-macros = "0.5.7"
 include-base64 = "0.1"
 serde = { version = "1", features = ["derive"] }
 percent-encoding = "2.1"
@@ -13,7 +15,13 @@ ic-certified-map = "0.3"
 sha2 = "0.10.2"
 serde_cbor = "0.11.2"
 base64 = "0.13.0"
-candid = "0.7.9"
+candid = "0.10.6"
+#candid = "0.7.9"
+
+
+[patch.crates-io]
+candid = { version = "0.10.6", package = "candid" }
+candid_derive = { version = "0.6.6", package = "candid_derive" }
 
 [lib]
 crate-type = ["cdylib"]

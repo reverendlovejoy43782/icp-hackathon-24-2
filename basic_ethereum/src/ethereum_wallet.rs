@@ -11,11 +11,18 @@ use ic_crypto_ecdsa_secp256k1::{PublicKey, RecoveryId};
 use ic_ethereum_types::Address;
 use serde_bytes::ByteBuf;
 
+// START NEW IMPORT
+use base32::Alphabet::RFC4648;
+use base32::encode;
+// END NEW IMPORT
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct EthereumWallet {
     owner: Principal,
     derived_public_key: EcdsaPublicKey,
 }
+
+
 
 impl AsRef<PublicKey> for EthereumWallet {
     fn as_ref(&self) -> &PublicKey {
@@ -23,7 +30,98 @@ impl AsRef<PublicKey> for EthereumWallet {
     }
 }
 
+// START NEW CODE
+
+fn pad_and_encode_base32(input_str: &str, desired_length: usize) -> String {
+    // Calculate the bits needed for desired Base32 length
+    let required_bits = desired_length * 5;
+    let current_bits = input_str.len() * 8;
+    let padding_bits_needed = required_bits as isize - current_bits as isize;
+
+    // Calculate the padding length needed
+    let padding_length = ((padding_bits_needed + 7) / 8).max(0) as usize; // Round up to full bytes
+
+    // Add padding characters to the input string
+    let padded_input_str = format!("{}{}", input_str, "A".repeat(padding_length));
+
+    // Base32 encode the padded input string
+    let base32_encoded = encode(RFC4648 { padding: false }, padded_input_str.as_bytes());
+
+    // Ensure the encoded string is exactly the desired length
+    let truncated_base32: String = base32_encoded.chars().take(desired_length).collect();
+
+    // Convert to lowercase
+    let truncated_base32 = truncated_base32.to_lowercase();
+
+    // Split the truncated string into parts and join with hyphens
+    let parts = [
+        &truncated_base32[0..5],
+        &truncated_base32[5..10],
+        &truncated_base32[10..15],
+        &truncated_base32[15..20],
+        &truncated_base32[20..25],
+        &truncated_base32[25..27],
+    ];
+    format!("{}-{}-{}-{}-{}", parts[0], parts[1], parts[2], parts[3], &parts[4][0..3])
+}
+
+fn geohash_to_principal(geohash: &str) -> Principal {
+    // Convert the geohash to a base32 string
+    // concadenate geohash with a string of 5 characters
+    let five_chars = "aaaa-";
+
+    let base32_geohash = pad_and_encode_base32(geohash, 27);
+    //let base32_geohash = encode(RFC4648 { padding: true }, geohash_converted.as_bytes());
+
+    // Log the base32 encoded geohash
+    ic_cdk::println!("Base32 encoded geohash: {}", base32_geohash);
+
+
+
+    // Validate the base32 encoded geohash length
+    if base32_geohash.len() != 27 {
+        panic!("Invalid geohash length: {}", base32_geohash.len());
+    }
+
+    // Convert the base32 string to a Principal
+    match Principal::from_text(&base32_geohash) {
+        Ok(principal) => principal,
+        Err(e) => panic!("Invalid geohash format: {}", e),
+    }
+
+    // Convert the base32 string to a Principal
+    //Principal::from_text(base32_geohash).expect("Invalid geohash format")
+}
+
+fn create_ethereum_wallet(geohash: &str, public_key: EcdsaPublicKey) -> EthereumWallet {
+    let owner = geohash_to_principal(geohash);
+    EthereumWallet {
+        owner,
+        derived_public_key: public_key,
+    }
+}
+
+// END NEW CODE
+
 impl EthereumWallet {
+    // START NEW CODE
+    pub async fn new(geohash: String) -> Self {
+        let owner = geohash_to_principal(&geohash);
+        let derived_public_key = derive_public_key(&geohash, &lazy_call_ecdsa_public_key(&geohash).await);
+        Self {
+            owner,
+            derived_public_key,
+        }
+    }
+
+    pub fn ethereum_address(&self) -> Address {
+        Address::from(&self.derived_public_key)
+    }
+
+    // END NEW CODE
+
+    // START OLD CODE
+    /*
     pub async fn new(owner: Principal) -> Self {
         let derived_public_key = derive_public_key(&owner, &lazy_call_ecdsa_public_key().await);
         Self {
@@ -35,7 +133,8 @@ impl EthereumWallet {
     pub fn ethereum_address(&self) -> Address {
         Address::from(&self.derived_public_key)
     }
-
+    */
+    // END OLD CODE
     pub async fn sign_with_ecdsa(&self, message_hash: [u8; 32]) -> ([u8; 64], RecoveryId) {
         use ic_cdk::api::management_canister::ecdsa::SignWithEcdsaArgument;
 
@@ -88,6 +187,27 @@ impl EthereumWallet {
     }
 }
 
+// START NEW CODE 
+
+fn derive_public_key(geohash: &str, public_key: &EcdsaPublicKey) -> EcdsaPublicKey {
+    use ic_crypto_extended_bip32::{DerivationIndex, DerivationPath};
+    let derivation_path = DerivationPath::new(
+        geohash
+            .as_bytes()
+            .iter()
+            .map(|&b| DerivationIndex(vec![b]))
+            .collect::<Vec<DerivationIndex>>(),
+    );
+    public_key
+        .derive_new_public_key(&derivation_path)
+        .expect("BUG: failed to derive an ECDSA public key")
+}
+
+
+// END NEW CODE
+
+// START OLD CODE
+/*
 fn derive_public_key(owner: &Principal, public_key: &EcdsaPublicKey) -> EcdsaPublicKey {
     use ic_crypto_extended_bip32::{DerivationIndex, DerivationPath};
     let derivation_path = DerivationPath::new(
@@ -100,6 +220,8 @@ fn derive_public_key(owner: &Principal, public_key: &EcdsaPublicKey) -> EcdsaPub
         .derive_new_public_key(&derivation_path)
         .expect("BUG: failed to derive an ECDSA public key")
 }
+*/
+// END OLD CODE
 
 fn derivation_path(owner: &Principal) -> Vec<Vec<u8>> {
     const SCHEMA_V1: u8 = 1;

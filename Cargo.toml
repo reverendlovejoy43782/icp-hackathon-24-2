@@ -3,6 +3,7 @@ members = [
     "geohash",
     "dip721_nft_container",
     "nft-wallet",
-    "basic_bitcoin"
+    "basic_bitcoin",
+    "basic_ethereum"
 ]
 resolver = "2"

@@ -3,7 +3,7 @@
 
 // START IMPORTS AND PRAGMAS
 use ic_cdk::api::call::call;
-use ic_cdk::export::candid::{Principal};
+use candid::{Principal};
 use std::collections::HashMap;
 use crate::types::{MetadataDesc, MetadataPart, MetadataPurpose, MetadataVal, SquareProperties, MintReceipt}; // Import the common types
 use crate::{get_dip721_canister_id, update_geohash_to_token_id};

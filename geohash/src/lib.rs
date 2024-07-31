@@ -14,7 +14,7 @@ mod grid_generator;
 mod grid_match;
 
 // IC-Related Imports
-use ic_cdk::export::Principal;
+use candid::{Principal};
 use ic_cdk_macros::*;
 
 // Types

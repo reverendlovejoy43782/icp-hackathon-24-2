@@ -20,6 +20,9 @@ pub const EVM_RPC_CANISTER_ID: Principal =
     Principal::from_slice(b"\x00\x00\x00\x00\x02\x30\x00\xCC\x01\x01"); // 7hfb6-caaaa-aaaar-qadga-cai
 pub const EVM_RPC: EvmRpcCanister = EvmRpcCanister(EVM_RPC_CANISTER_ID);
 
+
+
+// Initialize the canister state with the provided arguments.
 #[init]
 pub fn init(maybe_init: Option<InitArg>) {
     if let Some(init_arg) = maybe_init {
@@ -27,8 +30,24 @@ pub fn init(maybe_init: Option<InitArg>) {
     }
 }
 
+
+// START HELPER FUNCTIONS
+
+fn principal_to_geohash(principal: &Principal) -> String {
+    // Convert the Principal back to a geohash string
+    principal.to_text()
+}
+
+// END HELPER FUNCTIONS
+
 // START NEW CODE
 
+#[update]
+pub async fn ethereum_address(geohash: String) -> String {
+    let wallet = EthereumWallet::new(geohash).await;
+    wallet.ethereum_address().to_string()
+}
+/*
 // Convert geohash to a unique derivation path
 fn geohash_to_derivation_path(geohash: &str) -> Vec<Vec<u8>> {
     // Example conversion logic - adapt as needed
@@ -47,7 +66,7 @@ pub async fn ethereum_address(owner: Option<Principal>, geohash: String) -> Stri
     let wallet = EthereumWallet::new(owner, derivation_path).await;
     wallet.ethereum_address().to_string()
 }
-
+*/
 // END NEW CODE
 
 // START OLD CODE
@@ -66,7 +85,12 @@ pub async fn ethereum_address(owner: Option<Principal>) -> String {
 pub async fn transaction_count(owner: Option<Principal>, block: Option<BlockTag>) -> Nat {
     let caller = validate_caller_not_anonymous();
     let owner = owner.unwrap_or(caller);
-    let wallet = EthereumWallet::new(owner).await;
+
+    let geohash = principal_to_geohash(&owner); // Convert the Principal to a geohash string
+    let wallet = EthereumWallet::new(geohash).await; // Create the Ethereum wallet using the geohash
+
+    // let wallet = EthereumWallet::new(owner).await;
+
     let rpc_services = read_state(|s| s.evm_rpc_services());
     let args = GetTransactionCountArgs {
         address: wallet.ethereum_address().to_string(),
@@ -118,7 +142,13 @@ pub async fn send_eth(to: String, amount: Nat) -> String {
         input: Default::default(),
     };
 
-    let wallet = EthereumWallet::new(caller).await;
+    let owner = caller;
+    let geohash = principal_to_geohash(&owner); // Convert the Principal to a geohash string
+    let wallet = EthereumWallet::new(geohash).await; // Create the Ethereum wallet using the geohash
+
+    // let wallet = EthereumWallet::new(owner).await;
+
+
     let tx_hash = transaction.signature_hash().0;
     let (raw_signature, recovery_id) = wallet.sign_with_ecdsa(tx_hash).await;
     let signature = Signature::from_bytes_and_parity(&raw_signature, recovery_id.is_y_odd())
