@@ -35,15 +35,15 @@ export const idlFactory = ({ IDL }) => {
     content: IDL.Vec(IDL.Nat8),
   });
 
-  const BitcoinWallet = IDL.Record({
-    bitcoin_address: IDL.Text,
-    bitcoin_balance: IDL.Nat64,
+  const Wallet = IDL.Record({
+    bitcoin: IDL.Text,
+    ether: IDL.Text,
   });
 
   const SquareProperties = IDL.Record({
     geohash: IDL.Text,
     metadata: IDL.Text,
-    wallet: BitcoinWallet,
+    wallet: Wallet,
   });
 
   const Geolocation = IDL.Record({

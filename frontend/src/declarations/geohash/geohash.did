@@ -36,21 +36,15 @@ type Nft = record {
 };
 type Wallet = record {
     ether: text;
-    usdc: text;
     bitcoin: text;
 };
 
-// Type for bitcoin wallet of a square
-type BitcoinWallet = record {
-    bitcoin_address: text;
-    bitcoin_balance: nat64;
-};
 
 // All information about a square
 type SquareProperties = record {
     geohash: text;
     metadata: text;
-    wallet: BitcoinWallet;
+    wallet: Wallet;
 };
 
 type Geolocation = record { 
@@ -66,6 +60,12 @@ type AreaResponse = record {
     nft_square: opt Nft; 
     created: bool;
 };
+
+type GetEthereumAddressInput = record {
+    canister_id: principal;
+    geohash: text;
+};
+
 service : {
     compute_geohash: (Geolocation) -> (text);
     compute_area: (text) -> (text);

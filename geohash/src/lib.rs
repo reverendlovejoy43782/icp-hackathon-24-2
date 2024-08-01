@@ -18,7 +18,7 @@ use candid::{Principal};
 use ic_cdk_macros::*;
 
 // Types
-use crate::types::{Geolocation, Nft, SquareProperties, GetEthereumAddressInput, BitcoinWallet, EthereumWallet};
+use crate::types::{Geolocation, Nft, SquareProperties, GetEthereumAddressInput, Wallet};
 
 // Functions from bitcoin
 use bitcoin::{get_bitcoin_address, get_bitcoin_balance};
@@ -136,15 +136,15 @@ async fn get_bitcoin_address_update() -> String {
 */
 
 // Function to mint NFT or get existing NFT for a given geohash
-async fn get_or_mint_nft_square(nearest_geohash: &String) -> (Option<Nft>, bool) {
+async fn get_or_mint_nft_square(nearest_geohash: &String) -> (Option<Nft>, u64, bool) {
     match get_token_id_by_geohash(nearest_geohash) {
         Some(token_id) => {
             // Token ID exists, fetch the NFT information
             match get_nft_by_geohash(nearest_geohash.clone()).await {
-                Ok(nft) => (Some(nft), false),
+                Ok(nft) => (Some(nft), 0, false),
                 Err(err) => {
                     ic_cdk::println!("GEOHASH_LIB.RS_Failed to get NFT by geohash: {:?}", err);
-                    (None, false)
+                    (None, 0, false)
                 }
             }
         },
@@ -169,31 +169,20 @@ async fn get_or_mint_nft_square(nearest_geohash: &String) -> (Option<Nft>, bool)
             });
             ic_cdk::println!("Retrieved Bitcoin balance: {:?}", bitcoin_balance);
 
-            /*
-            let bitcoin_balance = get_bitcoin_balance(bitcoin_canister_id, bitcoin_address.clone()).await.expect("Failed to get Bitcoin balance");
-            ic_cdk::println!("Retrieved Bitcoin balance: {:?}", bitcoin_balance);
-            */
-
-            let bitcoin_wallet = BitcoinWallet {
-                bitcoin_address,
-                bitcoin_balance,
-            };
 
             // Get the Ethereum address
             let ethereum_canister_id = get_ethereum_canister_id();
             let ethereum_address = get_ethereum_address(ethereum_canister_id, nearest_geohash.clone()).await.expect("Failed to get Ethereum address");
             
-            let ethereum_wallet = EthereumWallet {
-                ethereum_address,
-                ether_balance: 0,
-                usdc_balance: 0,
+            let wallet = Wallet {
+                ether: ethereum_address,
+                bitcoin: bitcoin_address,
             };
 
             let properties = SquareProperties {
                 geohash: nearest_geohash.clone(),
                 metadata: "".to_string(), // Empty metadata, as we only want to store geohash
-                bitcoin_wallet,
-                ethereum_wallet,
+                wallet,
             };
 
 
@@ -213,18 +202,19 @@ async fn get_or_mint_nft_square(nearest_geohash: &String) -> (Option<Nft>, bool)
                     match get_nft_by_geohash(nearest_geohash.clone()).await {
                         Ok(nft) => {
                             ic_cdk::println!("GEOHASH_LIB.RS_NFT minted successfully with nft: {:?}", nft);
-                            (Some(nft), true)
+                            
+                            (Some(nft), bitcoin_balance, true)
                         },
                         Err(err) => {
                             ic_cdk::println!("GEOHASH_LIB.RS_Failed to get NFT by geohash after minting: {:?}", err);
-                            (None, false)
+                            (None, bitcoin_balance, false)
                         }
                     }
                 },
                 Err(err) => {
                     // Handle error minting NFT
                     ic_cdk::println!("GEOHASH_LIB.RS_Failed to mint NFT: {:?}", err);
-                    (None, false)
+                    (None, bitcoin_balance, false)
                 },
             }
         }
@@ -280,7 +270,7 @@ async fn compute_geohash(geolocation: Geolocation) -> String {
     let (nearest_geohash, bounds) = find_nearest_geohash_with_bounds(geolocation.latitude, geolocation.longitude);
 
     // Helper function to get or mint the NFT square
-    let (nft_square, created) = get_or_mint_nft_square(&nearest_geohash).await;
+    let (nft_square, bitcoin_balance, created) = get_or_mint_nft_square(&nearest_geohash).await;
 
     // Simplified logging
     ic_cdk::println!("GEOHASH_LIB:RS_COMPUTE_GEOHASH_NFT_SQUARE: {:?}, CREATED: {:?}", nft_square, created);
@@ -300,6 +290,7 @@ async fn compute_geohash(geolocation: Geolocation) -> String {
                 "content": nft.content,
             })
         }),
+        "bitcoin_balance": bitcoin_balance,
         "created": created,
     });
 
@@ -322,7 +313,7 @@ async fn compute_area(geohash: String) -> String {
     let (nearest_geohash, bounds) = find_nearest_geohash_with_bounds(coord.y, coord.x);
 
     // Helper function to get or mint the NFT square
-    let (nft_square, created) = get_or_mint_nft_square(&nearest_geohash).await;
+    let (nft_square, bitcoin_balance, created) = get_or_mint_nft_square(&nearest_geohash).await;
 
     ic_cdk::println!("GEOHASH_LIB:RS_COMPUTE_AREA_NFT_SQUARE: {:?}, CREATED: {:?}", nft_square, created);
 
@@ -341,6 +332,7 @@ async fn compute_area(geohash: String) -> String {
                 "content": nft.content,
             })
         }),
+        "bitcoin_balance": bitcoin_balance,
         "created": created,
     });
 

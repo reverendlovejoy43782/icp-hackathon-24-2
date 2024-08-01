@@ -17,11 +17,9 @@ pub fn create_metadata(properties: SquareProperties) -> MetadataDesc {
     // Create a HashMap with geohash, bitcoin address, and bitcoin balance
     let mut key_val_data = HashMap::new();
     key_val_data.insert("geohash".to_string(), MetadataVal::TextContent(properties.geohash));
-    key_val_data.insert("bitcoin_address".to_string(), MetadataVal::TextContent(properties.bitcoin_wallet.bitcoin_address));
-    key_val_data.insert("bitcoin_balance".to_string(), MetadataVal::Nat64Content(properties.bitcoin_wallet.bitcoin_balance));
-    key_val_data.insert("ethereum_address".to_string(), MetadataVal::TextContent(properties.ethereum_wallet.ethereum_address));
-    key_val_data.insert("ether_balance".to_string(), MetadataVal::Nat64Content(properties.ethereum_wallet.ether_balance));
-    key_val_data.insert("usdc_balance".to_string(), MetadataVal::Nat64Content(properties.ethereum_wallet.usdc_balance));
+    key_val_data.insert("bitcoin_address".to_string(), MetadataVal::TextContent(properties.wallet.bitcoin));
+    key_val_data.insert("ethereum_address".to_string(), MetadataVal::TextContent(properties.wallet.ether));
+
 
     // Define MetadataPart with the required fields
     let metadata_print = vec![MetadataPart {

@@ -39,21 +39,14 @@ export interface Nft {
 
 export interface Wallet {
   ether: string;
-  usdc: string;
   bitcoin: string;
-}
-
-
-export interface BitcoinWallet {
-  bitcoin_address: string;
-  bitcoin_balance: bigint;
 }
 
 
 export interface SquareProperties {
   geohash: string;
   metadata: string;
-  wallet: BitcoinWallet;
+  wallet: Wallet;
 }
 
 export interface Geolocation {
