@@ -21,7 +21,7 @@ use ic_cdk_macros::*;
 use crate::types::{Geolocation, Nft, SquareProperties, GetEthereumAddressInput, BitcoinWallet, EthereumWallet};
 
 // Functions from bitcoin
-use bitcoin::get_bitcoin_address;
+use bitcoin::{get_bitcoin_address, get_bitcoin_balance};
 
 // Functions from ethereum
 use ethereum::get_ethereum_address;
@@ -160,15 +160,23 @@ async fn get_or_mint_nft_square(nearest_geohash: &String) -> (Option<Nft>, bool)
             let bitcoin_address = get_bitcoin_address(bitcoin_canister_id, nearest_geohash.clone()).await.expect("Failed to get Bitcoin address");
             //let bitcoin_address = get_bitcoin_address(bitcoin_canister_id).await.expect("Failed to get Bitcoin address");
             ic_cdk::println!("Retrieved Bitcoin address: {:?}", bitcoin_address);
+
+            // Get the Bitcoin balance
+
+            let bitcoin_balance = get_bitcoin_balance(bitcoin_canister_id, bitcoin_address.clone()).await.unwrap_or_else(|err| {
+                ic_cdk::println!("Failed to get Bitcoin balance: {:?}", err);
+                0 // Default to 0 if balance retrieval fails
+            });
+            ic_cdk::println!("Retrieved Bitcoin balance: {:?}", bitcoin_balance);
+
             /*
-            // Get the Bitcoin address
-            let bitcoin_canister_id = BASIC_BITCOIN_CANISTER_ID.with(|id| id.borrow().clone().expect("Bitcoin canister ID not set"));
-            ic_cdk::println!("Retrieved Bitcoin canister ID: {:?}", bitcoin_canister_id);
-            let bitcoin_address = get_bitcoin_address(bitcoin_canister_id).await.expect("Failed to get Bitcoin address");
+            let bitcoin_balance = get_bitcoin_balance(bitcoin_canister_id, bitcoin_address.clone()).await.expect("Failed to get Bitcoin balance");
+            ic_cdk::println!("Retrieved Bitcoin balance: {:?}", bitcoin_balance);
             */
+
             let bitcoin_wallet = BitcoinWallet {
                 bitcoin_address,
-                bitcoin_balance: 0,
+                bitcoin_balance,
             };
 
             // Get the Ethereum address
@@ -232,21 +240,21 @@ async fn get_or_mint_nft_square(nearest_geohash: &String) -> (Option<Nft>, bool)
 // Functions at init
 #[init]
 fn init() {
-    let dip721_canister_id = "bkyz2-fmaaa-aaaaa-qaaaq-cai";
+    let dip721_canister_id = "be2us-64aaa-aaaaa-qaabq-cai";
     ic_cdk::println!("Initializing with DIP721_CANISTER_ID: {:?}", dip721_canister_id);
     let dip721_canister_principal = Principal::from_text(dip721_canister_id).expect("Invalid hardcoded DIP721_CANISTER_ID principal");
     set_dip721_canister_id(Some(dip721_canister_principal));
     ic_cdk::println!("DIP721_CANISTER_ID set to: {:?}", dip721_canister_principal);
 
 
-    let basic_bitcoin_canister_id = "be2us-64aaa-aaaaa-qaabq-cai";
+    let basic_bitcoin_canister_id = "bkyz2-fmaaa-aaaaa-qaaaq-cai";
     ic_cdk::println!("Initializing with BASIC_BITCOIN_CANISTER_ID: {:?}", basic_bitcoin_canister_id);
     let basic_bitcoin_canister_principal = Principal::from_text(basic_bitcoin_canister_id).expect("Invalid BASIC_BITCOIN_CANISTER_ID principal");
     set_bitcoin_canister_id(Some(basic_bitcoin_canister_principal));
     ic_cdk::println!("BASIC_BITCOIN_CANISTER_ID set to: {:?}", basic_bitcoin_canister_principal);
 
 
-    let basic_ethereum_canister_id = "br5f7-7uaaa-aaaaa-qaaca-cai";
+    let basic_ethereum_canister_id = "bd3sg-teaaa-aaaaa-qaaba-cai";
     ic_cdk::println!("Initializing with BASIC_ETHEREUM_CANISTER_ID: {:?}", basic_ethereum_canister_id);
     let basic_ethereum_canister_principal = Principal::from_text(basic_ethereum_canister_id).expect("Invalid BASIC_ETHEREUM_CANISTER_ID principal");
     set_ethereum_canister_id(Some(basic_ethereum_canister_principal));

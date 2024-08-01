@@ -45,9 +45,9 @@ service : (opt InitArg) -> {
     // Returns the transaction count for the Ethereum address derived for the given principal.
     //
     // If the owner is not set, it defaults to the caller's principal.
-    transaction_count : (owner: opt principal, block_height: opt BlockTag) -> (nat);
+    transaction_count : (owner: opt principal, block_height: opt BlockTag, geohash: text) -> (nat);
 
     // Sends the given amount of ETH in base unit (Wei) to the given Ethereum address.
     // Returns the transaction hash
-    send_eth : (to: text, amount: Wei) -> (text);
+    send_eth : (to: text, amount: Wei, geohash: text) -> (text);
 }
