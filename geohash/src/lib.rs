@@ -18,7 +18,7 @@ use candid::{Principal};
 use ic_cdk_macros::*;
 
 // Types
-use crate::types::{Geolocation, Nft, SquareProperties, GetEthereumAddressInput, BitcoinWallet};
+use crate::types::{Geolocation, Nft, SquareProperties, GetEthereumAddressInput, BitcoinWallet, EthereumWallet};
 
 // Functions from bitcoin
 use bitcoin::get_bitcoin_address;
@@ -47,12 +47,12 @@ use serde_json::json;
 
 
 // START TEST METHOD
-
+/*
 #[update]
 async fn fetch_ethereum_address(input: GetEthereumAddressInput) -> Result<String, String> {
     get_ethereum_address(input.canister_id, input.geohash).await
 }
-
+*/
 // END TEST METHOD
 
 
@@ -62,6 +62,7 @@ thread_local! {
     static DIP721_CANISTER_ID: RefCell<Option<Principal>> = RefCell::new(None);
     static GEOHASH_TO_TOKEN_ID: RefCell<HashMap<String, u64>> = RefCell::new(HashMap::new());
     static BASIC_BITCOIN_CANISTER_ID: RefCell<Option<Principal>> = RefCell::new(None);
+    static BASIC_ETHEREUM_CANISTER_ID: RefCell<Option<Principal>> = RefCell::new(None);
 }
 
 // END LOCAL STORAGE
@@ -86,6 +87,14 @@ pub fn get_bitcoin_canister_id() -> Principal {
     BASIC_BITCOIN_CANISTER_ID.with(|id| id.borrow().expect("Bitcoin canister ID must be set"))
 }
 
+pub fn set_ethereum_canister_id(ethereum_canister_id: Option<Principal>) {
+    BASIC_ETHEREUM_CANISTER_ID.with(|id| *id.borrow_mut() = ethereum_canister_id);
+}
+
+pub fn get_ethereum_canister_id() -> Principal {
+    BASIC_ETHEREUM_CANISTER_ID.with(|id| id.borrow().expect("Ethereum canister ID must be set"))
+}
+
 pub fn update_geohash_to_token_id(geohash: String, token_id: u64) {
     GEOHASH_TO_TOKEN_ID.with(|map| map.borrow_mut().insert(geohash, token_id));
 }
@@ -98,13 +107,17 @@ pub fn pre_upgrade() {
     let dip721_id = DIP721_CANISTER_ID.with(|id| id.borrow().clone());
     let bitcoin_canister_id = BASIC_BITCOIN_CANISTER_ID.with(|id| id.borrow().clone());
     let geohash_to_token_id: Vec<(String, u64)> = GEOHASH_TO_TOKEN_ID.with(|map| map.borrow().clone().into_iter().collect());
-    ic_cdk::storage::stable_save((dip721_id, bitcoin_canister_id, geohash_to_token_id)).expect("Failed to save to stable storage");
+    let ethereum_canister_id = BASIC_ETHEREUM_CANISTER_ID.with(|id| id.borrow().clone());
+    ic_cdk::storage::stable_save((dip721_id, bitcoin_canister_id, ethereum_canister_id, geohash_to_token_id)).expect("Failed to save to stable storage");
+    //ic_cdk::storage::stable_save((dip721_id, bitcoin_canister_id, geohash_to_token_id)).expect("Failed to save to stable storage");
 }
 
 pub fn post_upgrade() {
-    let (dip721_id, bitcoin_canister_id, geohash_to_token_id): (Option<Principal>, Option<Principal>, Vec<(String, u64)>) = ic_cdk::storage::stable_restore().expect("Failed to restore from stable storage");
+    let (dip721_id, bitcoin_canister_id, ethereum_canister_id, geohash_to_token_id): (Option<Principal>, Option<Principal>, Option<Principal>, Vec<(String, u64)>) = ic_cdk::storage::stable_restore().expect("Failed to restore from stable storage");
+    //let (dip721_id, bitcoin_canister_id, geohash_to_token_id): (Option<Principal>, Option<Principal>, Vec<(String, u64)>) = ic_cdk::storage::stable_restore().expect("Failed to restore from stable storage");
     DIP721_CANISTER_ID.with(|id| *id.borrow_mut() = dip721_id);
     BASIC_BITCOIN_CANISTER_ID.with(|id| *id.borrow_mut() = bitcoin_canister_id);
+    BASIC_ETHEREUM_CANISTER_ID.with(|id| *id.borrow_mut() = ethereum_canister_id);
     GEOHASH_TO_TOKEN_ID.with(|map| *map.borrow_mut() = geohash_to_token_id.into_iter().collect());
     ic_cdk::println!("Post-upgrade DIP721_CANISTER_ID: {:?}", dip721_id);
     ic_cdk::println!("Post-upgrade BASIC_BITCOIN_CANISTER_ID: {:?}", bitcoin_canister_id);
@@ -158,12 +171,23 @@ async fn get_or_mint_nft_square(nearest_geohash: &String) -> (Option<Nft>, bool)
                 bitcoin_balance: 0,
             };
 
+            // Get the Ethereum address
+            let ethereum_canister_id = get_ethereum_canister_id();
+            let ethereum_address = get_ethereum_address(ethereum_canister_id, nearest_geohash.clone()).await.expect("Failed to get Ethereum address");
             
+            let ethereum_wallet = EthereumWallet {
+                ethereum_address,
+                ether_balance: 0,
+                usdc_balance: 0,
+            };
+
             let properties = SquareProperties {
                 geohash: nearest_geohash.clone(),
                 metadata: "".to_string(), // Empty metadata, as we only want to store geohash
-                wallet: bitcoin_wallet,
+                bitcoin_wallet,
+                ethereum_wallet,
             };
+
 
             // Get the principal of the caller
             let caller = ic_cdk::api::caller();
@@ -208,18 +232,25 @@ async fn get_or_mint_nft_square(nearest_geohash: &String) -> (Option<Nft>, bool)
 // Functions at init
 #[init]
 fn init() {
-    let dip721_canister_id = "be2us-64aaa-aaaaa-qaabq-cai";
+    let dip721_canister_id = "bkyz2-fmaaa-aaaaa-qaaaq-cai";
     ic_cdk::println!("Initializing with DIP721_CANISTER_ID: {:?}", dip721_canister_id);
     let dip721_canister_principal = Principal::from_text(dip721_canister_id).expect("Invalid hardcoded DIP721_CANISTER_ID principal");
     set_dip721_canister_id(Some(dip721_canister_principal));
     ic_cdk::println!("DIP721_CANISTER_ID set to: {:?}", dip721_canister_principal);
 
 
-    let basic_bitcoin_canister_id = "bkyz2-fmaaa-aaaaa-qaaaq-cai";
+    let basic_bitcoin_canister_id = "be2us-64aaa-aaaaa-qaabq-cai";
     ic_cdk::println!("Initializing with BASIC_BITCOIN_CANISTER_ID: {:?}", basic_bitcoin_canister_id);
     let basic_bitcoin_canister_principal = Principal::from_text(basic_bitcoin_canister_id).expect("Invalid BASIC_BITCOIN_CANISTER_ID principal");
     set_bitcoin_canister_id(Some(basic_bitcoin_canister_principal));
     ic_cdk::println!("BASIC_BITCOIN_CANISTER_ID set to: {:?}", basic_bitcoin_canister_principal);
+
+
+    let basic_ethereum_canister_id = "br5f7-7uaaa-aaaaa-qaaca-cai";
+    ic_cdk::println!("Initializing with BASIC_ETHEREUM_CANISTER_ID: {:?}", basic_ethereum_canister_id);
+    let basic_ethereum_canister_principal = Principal::from_text(basic_ethereum_canister_id).expect("Invalid BASIC_ETHEREUM_CANISTER_ID principal");
+    set_ethereum_canister_id(Some(basic_ethereum_canister_principal));
+    ic_cdk::println!("BASIC_ETHEREUM_CANISTER_ID set to: {:?}", basic_ethereum_canister_principal);
 
 
     // Clear stable storage

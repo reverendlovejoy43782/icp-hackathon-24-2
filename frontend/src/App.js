@@ -191,6 +191,18 @@ function App() {
                         <th scope="row" className="px-6 py-4 font-medium text-gray-900">Bitcoin Balance</th>
                         <td className="px-6 py-4">{response.nft_square.metadata[0].key_val_data.find(kv => kv.key === 'bitcoin_balance').val.Nat64Content}</td>
                       </tr>
+                      <tr className="odd:bg-white even:bg-gray-50 border-b">
+                        <th scope="row" className="px-6 py-4 font-medium text-gray-900">Ethereum Address</th>
+                        <td className="px-6 py-4">{response.nft_square.metadata[0].key_val_data.find(kv => kv.key === 'ethereum_address').val.TextContent}</td>
+                      </tr>
+                      <tr className="odd:bg-white even:bg-gray-50 border-b">
+                        <th scope="row" className="px-6 py-4 font-medium text-gray-900">Ether Balance</th>
+                        <td className="px-6 py-4">{response.nft_square.metadata[0].key_val_data.find(kv => kv.key === 'ether_balance').val.Nat64Content}</td>
+                      </tr>
+                      <tr className="odd:bg-white even:bg-gray-50 border-b">
+                        <th scope="row" className="px-6 py-4 font-medium text-gray-900">USDC Balance</th>
+                        <td className="px-6 py-4">{response.nft_square.metadata[0].key_val_data.find(kv => kv.key === 'usdc_balance').val.Nat64Content}</td>
+                      </tr>
                     </tbody>
                   </table>
                 </div>

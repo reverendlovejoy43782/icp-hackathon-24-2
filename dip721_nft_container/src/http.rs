@@ -2,10 +2,9 @@ use std::borrow::Cow;
 use std::iter::FromIterator;
 use std::{cell::RefCell, collections::HashMap};
 
-use candid::CandidType;
+use candid::{CandidType};
 use ic_cdk::{
     api::{self, call},
-    export::candid,
 };
 use ic_certified_map::{AsHashTree, Hash, RbTree};
 use percent_encoding::percent_decode_str;
@@ -42,7 +41,8 @@ struct HttpResponse<'a> {
 fn http_request(/* req: HttpRequest */) /* -> HttpResponse */
 {
     ic_cdk::setup();
-    let req = call::arg_data::<(HttpRequest,)>().0;
+    let req = call::arg_data::<(HttpRequest,)>(call::ArgDecoderConfig::default()).0;
+    //let req = call::arg_data::<(HttpRequest,)>().0;
     STATE.with(|state| {
         let state = state.borrow();
         let url = req.url.split('?').next().unwrap_or("/");

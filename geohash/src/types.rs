@@ -41,7 +41,8 @@ pub struct Nft {
 pub struct SquareProperties {
     pub geohash: String,
     pub metadata: String,
-    pub wallet: BitcoinWallet,
+    pub bitcoin_wallet: BitcoinWallet,
+    pub ethereum_wallet: EthereumWallet,
 }
 
 // Struct representing a part of the metadata
@@ -122,6 +123,15 @@ pub struct Wallet {
 pub struct BitcoinWallet {
     pub bitcoin_address: String,
     pub bitcoin_balance: u64,
+}
+
+
+// Struct representing an Ethereum wallet with Ethereum and ERC20 token balances
+#[derive(CandidType, Deserialize, Clone, Debug)]
+pub struct EthereumWallet {
+    pub ethereum_address: String,
+    pub ether_balance: u64, 
+    pub usdc_balance: u64, // example for an ERC20 token
 }
 
 // Enum representing the result of a mint operation

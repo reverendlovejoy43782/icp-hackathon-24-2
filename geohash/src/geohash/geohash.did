@@ -46,11 +46,19 @@ type BitcoinWallet = record {
     bitcoin_balance: nat64;
 };
 
+// Type for ethereum wallet of a square
+type EthereumWallet = record {
+    ethereum_address: text;
+    ether_balance: nat64;
+    usdc_balance: nat64;
+};
+
 // All information about a square
 type SquareProperties = record {
     geohash: text;
     metadata: text;
-    wallet: BitcoinWallet;
+    bitcoin_wallet: BitcoinWallet;
+    ethereum_wallet: EthereumWallet;
 };
 
 type Geolocation = record { 
@@ -75,5 +83,4 @@ type GetEthereumAddressInput = record {
 service : {
     compute_geohash: (Geolocation) -> (text);
     compute_area: (text) -> (text);
-    fetch_ethereum_address: (GetEthereumAddressInput) -> (result: variant { Ok: text; Err: text });
 }
