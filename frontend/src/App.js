@@ -173,7 +173,7 @@ function App() {
     <>
       {/* Top navigation bar */}
       <div className="bg-indigo-600 text-white py-4">
-        <div className="container mx-auto flex justify-between items-center">
+        <div className="container mx-auto px-4 flex justify-between items-center">
           {/* Button to reset the view to default */}
           <button onClick={() => window.location.reload()} className="text-xl font-semibold hover:text-gray-300">
             A datalayer of the world
