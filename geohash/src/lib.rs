@@ -68,6 +68,43 @@ thread_local! {
 // END LOCAL STORAGE
 
 
+// START INIT FUNCTIONS
+
+#[init]
+fn init() {
+    // manually loading canister ids for now (mvp only)
+    let dip721_canister_id = "be2us-64aaa-aaaaa-qaabq-cai";
+    ic_cdk::println!("Initializing with DIP721_CANISTER_ID: {:?}", dip721_canister_id);
+    let dip721_canister_principal = Principal::from_text(dip721_canister_id).expect("Invalid hardcoded DIP721_CANISTER_ID principal");
+    set_dip721_canister_id(Some(dip721_canister_principal));
+    ic_cdk::println!("DIP721_CANISTER_ID set to: {:?}", dip721_canister_principal);
+
+
+    let basic_bitcoin_canister_id = "bd3sg-teaaa-aaaaa-qaaba-cai";
+    ic_cdk::println!("Initializing with BASIC_BITCOIN_CANISTER_ID: {:?}", basic_bitcoin_canister_id);
+    let basic_bitcoin_canister_principal = Principal::from_text(basic_bitcoin_canister_id).expect("Invalid BASIC_BITCOIN_CANISTER_ID principal");
+    set_bitcoin_canister_id(Some(basic_bitcoin_canister_principal));
+    ic_cdk::println!("BASIC_BITCOIN_CANISTER_ID set to: {:?}", basic_bitcoin_canister_principal);
+
+
+    let basic_ethereum_canister_id = "bw4dl-smaaa-aaaaa-qaacq-cai";
+    ic_cdk::println!("Initializing with BASIC_ETHEREUM_CANISTER_ID: {:?}", basic_ethereum_canister_id);
+    let basic_ethereum_canister_principal = Principal::from_text(basic_ethereum_canister_id).expect("Invalid BASIC_ETHEREUM_CANISTER_ID principal");
+    set_ethereum_canister_id(Some(basic_ethereum_canister_principal));
+    ic_cdk::println!("BASIC_ETHEREUM_CANISTER_ID set to: {:?}", basic_ethereum_canister_principal);
+
+
+    // Clear stable storage
+    GEOHASH_TO_TOKEN_ID.with(|map| *map.borrow_mut() = HashMap::new());
+    //set_dip721_canister_id(None);
+
+    // Logging to verify initialization
+    let stored_bitcoin_canister_id = BASIC_BITCOIN_CANISTER_ID.with(|id| id.borrow().clone());
+    ic_cdk::println!("Initialized BASIC_BITCOIN_CANISTER_ID: {:?}", stored_bitcoin_canister_id);
+}
+
+// END INIT FUNCTIONS
+
 // START HELPER FUNCTIONS
 
 // Helper functions to get and set state
@@ -136,9 +173,13 @@ async fn get_bitcoin_address_update() -> String {
 */
 
 // Function to mint NFT or get existing NFT for a given geohash
-async fn get_or_mint_nft_square(nearest_geohash: &String) -> (Option<Nft>, u64, bool) {
+async fn get_or_mint_nft_square(nearest_geohash: &String) -> (Option<Nft>, u64, u64, bool) {
 
     let bitcoin_canister_id = get_bitcoin_canister_id();
+    //let ethereum_canister_id = get_ethereum_canister_id();
+
+    // placeholder (for this mvp) for ethereum address balance
+    let ethereum_balance = 0;
 
 
     match get_token_id_by_geohash(nearest_geohash) {
@@ -175,11 +216,11 @@ async fn get_or_mint_nft_square(nearest_geohash: &String) -> (Option<Nft>, u64, 
                         0
                     };
 
-                    (Some(nft), bitcoin_balance, false)
+                    (Some(nft), bitcoin_balance, ethereum_balance, false)
                 },
                 Err(err) => {
                     ic_cdk::println!("GEOHASH_LIB.RS_Failed to get NFT by geohash: {:?}", err);
-                    (None, 0, false)
+                    (None, 0, ethereum_balance, false)
                 }
             }
         },
@@ -238,18 +279,18 @@ async fn get_or_mint_nft_square(nearest_geohash: &String) -> (Option<Nft>, u64, 
                         Ok(nft) => {
                             ic_cdk::println!("GEOHASH_LIB.RS_NFT minted successfully with nft: {:?}", nft);
                             
-                            (Some(nft), bitcoin_balance, true)
+                            (Some(nft), bitcoin_balance, ethereum_balance, true)
                         },
                         Err(err) => {
                             ic_cdk::println!("GEOHASH_LIB.RS_Failed to get NFT by geohash after minting: {:?}", err);
-                            (None, bitcoin_balance, false)
+                            (None, bitcoin_balance, ethereum_balance, false)
                         }
                     }
                 },
                 Err(err) => {
                     // Handle error minting NFT
                     ic_cdk::println!("GEOHASH_LIB.RS_Failed to mint NFT: {:?}", err);
-                    (None, bitcoin_balance, false)
+                    (None, bitcoin_balance, ethereum_balance, false)
                 },
             }
         }
@@ -260,40 +301,7 @@ async fn get_or_mint_nft_square(nearest_geohash: &String) -> (Option<Nft>, u64, 
 // END HELPER FUNCTIONS
 
 
-// START FUNCTIONS
 
-// Functions at init
-#[init]
-fn init() {
-    let dip721_canister_id = "be2us-64aaa-aaaaa-qaabq-cai";
-    ic_cdk::println!("Initializing with DIP721_CANISTER_ID: {:?}", dip721_canister_id);
-    let dip721_canister_principal = Principal::from_text(dip721_canister_id).expect("Invalid hardcoded DIP721_CANISTER_ID principal");
-    set_dip721_canister_id(Some(dip721_canister_principal));
-    ic_cdk::println!("DIP721_CANISTER_ID set to: {:?}", dip721_canister_principal);
-
-
-    let basic_bitcoin_canister_id = "bd3sg-teaaa-aaaaa-qaaba-cai";
-    ic_cdk::println!("Initializing with BASIC_BITCOIN_CANISTER_ID: {:?}", basic_bitcoin_canister_id);
-    let basic_bitcoin_canister_principal = Principal::from_text(basic_bitcoin_canister_id).expect("Invalid BASIC_BITCOIN_CANISTER_ID principal");
-    set_bitcoin_canister_id(Some(basic_bitcoin_canister_principal));
-    ic_cdk::println!("BASIC_BITCOIN_CANISTER_ID set to: {:?}", basic_bitcoin_canister_principal);
-
-
-    let basic_ethereum_canister_id = "bw4dl-smaaa-aaaaa-qaacq-cai";
-    ic_cdk::println!("Initializing with BASIC_ETHEREUM_CANISTER_ID: {:?}", basic_ethereum_canister_id);
-    let basic_ethereum_canister_principal = Principal::from_text(basic_ethereum_canister_id).expect("Invalid BASIC_ETHEREUM_CANISTER_ID principal");
-    set_ethereum_canister_id(Some(basic_ethereum_canister_principal));
-    ic_cdk::println!("BASIC_ETHEREUM_CANISTER_ID set to: {:?}", basic_ethereum_canister_principal);
-
-
-    // Clear stable storage
-    GEOHASH_TO_TOKEN_ID.with(|map| *map.borrow_mut() = HashMap::new());
-    //set_dip721_canister_id(None);
-
-    // Logging to verify initialization
-    let stored_bitcoin_canister_id = BASIC_BITCOIN_CANISTER_ID.with(|id| id.borrow().clone());
-    ic_cdk::println!("Initialized BASIC_BITCOIN_CANISTER_ID: {:?}", stored_bitcoin_canister_id);
-}
 
 
 // START METHODS
@@ -305,7 +313,7 @@ async fn compute_geohash(geolocation: Geolocation) -> String {
     let (nearest_geohash, bounds) = find_nearest_geohash_with_bounds(geolocation.latitude, geolocation.longitude);
 
     // Helper function to get or mint the NFT square
-    let (nft_square, bitcoin_balance, created) = get_or_mint_nft_square(&nearest_geohash).await;
+    let (nft_square, bitcoin_balance, ethereum_balance, created) = get_or_mint_nft_square(&nearest_geohash).await;
 
     // Simplified logging
     ic_cdk::println!("GEOHASH_LIB:RS_COMPUTE_GEOHASH_NFT_SQUARE: {:?}, CREATED: {:?}", nft_square, created);
@@ -326,6 +334,7 @@ async fn compute_geohash(geolocation: Geolocation) -> String {
             })
         }),
         "bitcoin_balance": bitcoin_balance,
+        "ethereum_balance": ethereum_balance,
         "created": created,
     });
 
@@ -348,7 +357,7 @@ async fn compute_area(geohash: String) -> String {
     let (nearest_geohash, bounds) = find_nearest_geohash_with_bounds(coord.y, coord.x);
 
     // Helper function to get or mint the NFT square
-    let (nft_square, bitcoin_balance, created) = get_or_mint_nft_square(&nearest_geohash).await;
+    let (nft_square, bitcoin_balance, ethereum_balance, created) = get_or_mint_nft_square(&nearest_geohash).await;
 
     ic_cdk::println!("GEOHASH_LIB:RS_COMPUTE_AREA_NFT_SQUARE: {:?}, CREATED: {:?}", nft_square, created);
 
@@ -368,11 +377,12 @@ async fn compute_area(geohash: String) -> String {
             })
         }),
         "bitcoin_balance": bitcoin_balance,
+        "ethereum_balance": ethereum_balance,
         "created": created,
     });
 
     // Log the response
-    ic_cdk::println!("GEOHASH_LIB:RS_COMPUTE_AREA_AreaResponse: {:?}", response);
+    ic_cdk::println!("GEOHASH_LIB:RS_COMPUTE_AREA_Response: {:?}", response);
 
     // Return the response as a JSON string
     response.to_string()

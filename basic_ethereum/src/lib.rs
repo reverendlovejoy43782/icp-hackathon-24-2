@@ -78,49 +78,7 @@ pub async fn transaction_count(owner: Option<Principal>, block: Option<BlockTag>
 }
 
 
-/// START NEW CODE
-/*
-#[derive(CandidType, Deserialize, Clone, Debug)]
-pub struct GetBalanceArgs {
-    pub address: String,
-}
 
-
-#[update]
-pub async fn get_eth_balance(owner: Option<Principal>, geohash: String) -> Nat {
-    let caller = validate_caller_not_anonymous();
-    let owner = owner.unwrap_or(caller);
-    let wallet = EthereumWallet::new(owner, &geohash).await;
-    let rpc_services = read_state(|s| s.evm_rpc_services());
-    
-    let args = GetBalanceArgs {
-        address: wallet.ethereum_address().to_string(),
-    };
-
-    let (result,) = EVM_RPC
-        .eth_get_balance(rpc_services, None, args.clone(), 2_000_000_000_u128)
-        .await
-        .unwrap_or_else(|e| {
-            panic!(
-                "failed to get balance for {:?}, error: {:?}",
-                args, e
-            )
-        });
-
-    match result {
-        MultiGetBalanceResult::Consistent(consistent_result) => match consistent_result {
-            GetBalanceResult::Ok(balance) => balance,
-            GetBalanceResult::Err(error) => {
-                ic_cdk::trap(&format!("failed to get balance for {:?}, error: {:?}", args, error))
-            }
-        },
-        MultiGetBalanceResult::Inconsistent(inconsistent_results) => {
-            ic_cdk::trap(&format!("inconsistent results when retrieving balance for {:?}. Received results: {:?}", args, inconsistent_results))
-        }
-    }
-}
-*/
-/// END NEW CODE
 
 
 #[update]

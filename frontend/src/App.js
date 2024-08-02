@@ -195,6 +195,10 @@ function App() {
                       <th scope="row" className="px-6 py-4 font-medium text-gray-900">Ethereum Address</th>
                       <td className="px-6 py-4">{response.nft_square.metadata[0].key_val_data.find(kv => kv.key === 'ethereum_address').val.TextContent}</td>
                     </tr>
+                    <tr className="odd:bg-white even:bg-gray-50 border-b">
+                      <th scope="row" className="px-6 py-4 font-medium text-gray-900">Ethereum Balance</th>
+                      <td className="px-6 py-4">{response.ethereum_balance}</td>
+                    </tr>
                   </tbody>
                 </table>
                 </div>
