@@ -27,11 +27,11 @@ pub async fn get_nft_by_geohash(geohash: String) -> Result<Nft, String> {
         (token_id,)
     ).await;
 
-    ic_cdk::println!("GEOHASH_NFT_LOOKUP_metadata_result: {:?}", result);
+    //ic_cdk::println!("GEOHASH_NFT_LOOKUP_metadata_result: {:?}", result);
 
     let metadata_parts = match result {
         Ok((MetadataResult::Ok(metadata),)) => {
-            ic_cdk::println!("GEOHASH_NFT_LOOKUP_Metadata_OK: {:?}", metadata);
+            //ic_cdk::println!("GEOHASH_NFT_LOOKUP_Metadata_OK: {:?}", metadata);
             metadata
         },
         Ok((MetadataResult::Err(err),)) => {

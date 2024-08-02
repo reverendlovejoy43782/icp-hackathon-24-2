@@ -171,40 +171,32 @@ function App() {
                   <p className="text-blue-500 font-bold">NFT for square exists with Token ID {response.nft_square.token_id}</p>
                 )}
                 <div className="relative overflow-x-auto">
-                  <table className="w-full text-sm text-left text-gray-500">
-                    <thead className="text-xs text-gray-700 uppercase bg-gray-50">
-                      <tr>
-                        <th scope="col" className="px-6 py-3">Dimension</th>
-                        <th scope="col" className="px-6 py-3">Value</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr className="odd:bg-white even:bg-gray-50 border-b">
-                        <th scope="row" className="px-6 py-4 font-medium text-gray-900">Geohash</th>
-                        <td className="px-6 py-4">{response.geohash}</td>
-                      </tr>
-                      <tr className="odd:bg-white even:bg-gray-50 border-b">
-                        <th scope="row" className="px-6 py-4 font-medium text-gray-900">Bitcoin Address</th>
-                        <td className="px-6 py-4">{response.nft_square.metadata[0].key_val_data.find(kv => kv.key === 'bitcoin_address').val.TextContent}</td>
-                      </tr>
-                      <tr className="odd:bg-white even:bg-gray-50 border-b">
-                        <th scope="row" className="px-6 py-4 font-medium text-gray-900">Bitcoin Balance</th>
-                        <td className="px-6 py-4">{response.nft_square.metadata[0].key_val_data.find(kv => kv.key === 'bitcoin_balance').val.Nat64Content}</td>
-                      </tr>
-                      <tr className="odd:bg-white even:bg-gray-50 border-b">
-                        <th scope="row" className="px-6 py-4 font-medium text-gray-900">Ethereum Address</th>
-                        <td className="px-6 py-4">{response.nft_square.metadata[0].key_val_data.find(kv => kv.key === 'ethereum_address').val.TextContent}</td>
-                      </tr>
-                      <tr className="odd:bg-white even:bg-gray-50 border-b">
-                        <th scope="row" className="px-6 py-4 font-medium text-gray-900">Ether Balance</th>
-                        <td className="px-6 py-4">{response.nft_square.metadata[0].key_val_data.find(kv => kv.key === 'ether_balance').val.Nat64Content}</td>
-                      </tr>
-                      <tr className="odd:bg-white even:bg-gray-50 border-b">
-                        <th scope="row" className="px-6 py-4 font-medium text-gray-900">USDC Balance</th>
-                        <td className="px-6 py-4">{response.nft_square.metadata[0].key_val_data.find(kv => kv.key === 'usdc_balance').val.Nat64Content}</td>
-                      </tr>
-                    </tbody>
-                  </table>
+                <table className="w-full text-sm text-left text-gray-500">
+                  <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                    <tr>
+                      <th scope="col" className="px-6 py-3">Dimension</th>
+                      <th scope="col" className="px-6 py-3">Value</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="odd:bg-white even:bg-gray-50 border-b">
+                      <th scope="row" className="px-6 py-4 font-medium text-gray-900">Geohash</th>
+                      <td className="px-6 py-4">{response.geohash}</td>
+                    </tr>
+                    <tr className="odd:bg-white even:bg-gray-50 border-b">
+                      <th scope="row" className="px-6 py-4 font-medium text-gray-900">Bitcoin Address</th>
+                      <td className="px-6 py-4">{response.nft_square.metadata[0].key_val_data.find(kv => kv.key === 'bitcoin_address').val.TextContent}</td>
+                    </tr>
+                    <tr className="odd:bg-white even:bg-gray-50 border-b">
+                      <th scope="row" className="px-6 py-4 font-medium text-gray-900">Bitcoin Balance</th>
+                      <td className="px-6 py-4">{response.bitcoin_balance}</td>
+                    </tr>
+                    <tr className="odd:bg-white even:bg-gray-50 border-b">
+                      <th scope="row" className="px-6 py-4 font-medium text-gray-900">Ethereum Address</th>
+                      <td className="px-6 py-4">{response.nft_square.metadata[0].key_val_data.find(kv => kv.key === 'ethereum_address').val.TextContent}</td>
+                    </tr>
+                  </tbody>
+                </table>
                 </div>
               </div>
             )}
