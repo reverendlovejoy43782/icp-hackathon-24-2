@@ -39,6 +39,17 @@
             "candid": "basic_ethereum/basic_ethereum.did",
             "wasm": "target/wasm32-unknown-unknown/release/basic_ethereum.wasm",
             "build": "cd basic_ethereum && cargo build --target wasm32-unknown-unknown --release --target-dir target && ic-wasm target/wasm32-unknown-unknown/release/basic_ethereum_canister.wasm -o target/wasm32-unknown-unknown/release/basic_ethereum.wasm shrink"
+        },
+        "internet_identity": {
+            "type": "custom",
+            "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
+            "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz",
+            "remote": {
+                "id": {
+                "ic": "rdmx6-jaaaa-aaaaa-aaadq-cai"
+                }
+            },
+            "frontend": {}
         }
     },
     "networks": {

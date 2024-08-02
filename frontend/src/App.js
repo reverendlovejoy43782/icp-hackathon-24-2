@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createActor } from './declarations/geohash';
 import GeolocationMap from './GeolocationMap';
 import './tailwind.css';
+import { AuthClient } from "@dfinity/auth-client";
 
 function App() {
   const [latitude, setLatitude] = useState('');
@@ -12,7 +13,35 @@ function App() {
   const [location, setLocation] = useState(null);
   const [bounds, setBounds] = useState(null);
   const [mapGeohash, setMapGeohash] = useState('');
-  const [isUserLocation, setIsUserLocation] = useState(false); // New state flag
+  const [isUserLocation, setIsUserLocation] = useState(false); 
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authClient, setAuthClient] = useState(null);
+
+  useEffect(() => {
+    const initAuthClient = async () => {
+      const client = await AuthClient.create();
+      setAuthClient(client);
+      setIsAuthenticated(await client.isAuthenticated());
+    };
+
+    initAuthClient();
+  }, []);
+
+  const login = async () => {
+    await authClient.login({
+      identityProvider: `http://${process.env.REACT_APP_INTERNET_IDENTITY_CANISTER_ID}.localhost:8001/`,
+      onSuccess: () => {
+        setIsAuthenticated(true);
+      },
+    });
+  };
+
+  const logout = async () => {
+    await authClient.logout();
+    setIsAuthenticated(false);
+  };
+
+  console.log("Geohash Canister ID:", process.env.REACT_APP_GEOHASH_CANISTER_ID);
 
   const geohashActor = createActor(process.env.REACT_APP_GEOHASH_CANISTER_ID, {
     agentOptions: { host: 'http://127.0.0.1:8001' },
@@ -144,11 +173,22 @@ function App() {
     <>
       {/* Top navigation bar */}
       <div className="bg-indigo-600 text-white py-4">
-        <div className="container mx-auto flex justify-center">
+        <div className="container mx-auto flex justify-between items-center">
           {/* Button to reset the view to default */}
           <button onClick={() => window.location.reload()} className="text-xl font-semibold hover:text-gray-300">
             A datalayer of the world
           </button>
+          <div>
+            {isAuthenticated ? (
+              <button onClick={logout} className="text-xl font-semibold hover:text-gray-300">
+                Logout
+              </button>
+            ) : (
+              <button onClick={login} className="text-xl font-semibold hover:text-gray-300">
+                Login
+              </button>
+            )}
+          </div>
         </div>
       </div>
   

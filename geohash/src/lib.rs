@@ -43,6 +43,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use serde_json::json;
 
+
 // END IMPORTS AND PRAGMAS
 
 
@@ -72,6 +73,7 @@ thread_local! {
 
 #[init]
 fn init() {
+
     // manually loading canister ids for now (mvp only)
     let dip721_canister_id = "be2us-64aaa-aaaaa-qaabq-cai";
     ic_cdk::println!("Initializing with DIP721_CANISTER_ID: {:?}", dip721_canister_id);
