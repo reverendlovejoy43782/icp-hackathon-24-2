@@ -183,15 +183,27 @@ function App() {
 
 
   // Update inputs rating and clicks submit to update the rating of the square
+
+
+
   const handleUpdateRating = async () => {
+    const ratingValue = parseInt(rating);
+    if (isNaN(ratingValue) || ratingValue < 1 || ratingValue > 10) {
+      setError('Rating must be a number between 1 and 10');
+      return;
+    }
+  
     try {
       const ipnsName = response.nft_square.metadata[0].key_val_data.find(kv => kv.key === 'ipns_id').val.TextContent;
-      await geohashActor.update_rating(ipnsName, parseInt(rating));
+      await geohashActor.update_rating(ipnsName, ratingValue);
       console.log('Rating updated successfully');
+  
+      // Clear the error message
+      setError('');
   
       // Update the rating in the response state
       const updatedResponse = { ...response };
-      updatedResponse.real_time_metrics["Rating"] = parseInt(rating);
+      updatedResponse.real_time_metrics["Rating"] = ratingValue;
       setResponse(updatedResponse);
   
     } catch (err) {
@@ -199,6 +211,7 @@ function App() {
       setError(err.message);
     }
   };
+
   
   return (
     <>
@@ -324,7 +337,7 @@ function App() {
               </div>
             )}
 
-            {showUpdateRating && (
+            {isAuthenticated && showUpdateRating && (
               <div className="mb-6 mt-10">
                 <h2 className="text-xl mb-2">Update Rating</h2>
                 <input
@@ -332,14 +345,17 @@ function App() {
                   type="number"
                   placeholder="Rating (1-10)"
                   value={rating}
+                  min="1"
+                  max="10"
                   onChange={(e) => setRating(e.target.value)}
                 />
                 <button
                   className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
                   onClick={handleUpdateRating}
                 >
-                  Update Rating
+                  Submit Rating
                 </button>
+                {error && <p className="text-red-500">{error}</p>}
               </div>
             )}
 
