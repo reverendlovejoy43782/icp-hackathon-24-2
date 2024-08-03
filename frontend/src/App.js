@@ -16,6 +16,8 @@ function App() {
   const [isUserLocation, setIsUserLocation] = useState(false); 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authClient, setAuthClient] = useState(null);
+  const [rating, setRating] = useState('');
+  const [showUpdateRating, setShowUpdateRating] = useState(false);
 
   useEffect(() => {
     const initAuthClient = async () => {
@@ -63,6 +65,9 @@ function App() {
     }
   };
 
+
+
+  // User inputs geolocation and clicks submit to get the square information
   const handleGeolocationSubmit = async () => {
     try {
       const geolocation = { latitude: parseFloat(latitude), longitude: parseFloat(longitude) };
@@ -98,9 +103,13 @@ function App() {
 
 
       if (result && result.lat_start !== undefined && result.lon_start !== undefined && result.lat_end !== undefined && result.lon_end !== undefined && result.geohash) {
+        
+        // Signals that rating button should be shown, this does only make sense when user first sees current rating, therefore he needs to input geolocation first
+        setShowUpdateRating(true);
         console.log('Parsed result correctly:', result);
 
         setResponse(result);
+
         setError(null);
 
         setLocation({ latitude: geolocation.latitude, longitude: geolocation.longitude });
@@ -122,9 +131,10 @@ function App() {
     }
   };
 
-
+  // User inputs geohash and clicks submit to get the square information
   const handleGeohashSubmit = async () => {
     try {
+      
       const resultString = await geohashActor.compute_area(geohash);
       console.log('Received result:', resultString);
   
@@ -144,9 +154,12 @@ function App() {
       console.log('Result created:', result.created);
   
       if (result && result.lat_start !== undefined && result.lon_start !== undefined && result.lat_end !== undefined && result.lon_end !== undefined && result.geohash) {
+        // Signals that rating button should be shown
+        setShowUpdateRating(true);
         console.log('Parsed result correctly:', result);
   
         setResponse(result);
+
         setError(null);
   
         setLocation({ latitude: result.lat_start, longitude: result.lon_start });
@@ -168,6 +181,24 @@ function App() {
     }
   };
 
+
+  // Update inputs rating and clicks submit to update the rating of the square
+  const handleUpdateRating = async () => {
+    try {
+      const ipnsName = response.nft_square.metadata[0].key_val_data.find(kv => kv.key === 'ipns_id').val.TextContent;
+      await geohashActor.update_rating(ipnsName, parseInt(rating));
+      console.log('Rating updated successfully');
+  
+      // Update the rating in the response state
+      const updatedResponse = { ...response };
+      updatedResponse.real_time_metrics["Rating"] = parseInt(rating);
+      setResponse(updatedResponse);
+  
+    } catch (err) {
+      console.error('Error updating rating:', err.message, err);
+      setError(err.message);
+    }
+  };
   
   return (
     <>
@@ -292,7 +323,26 @@ function App() {
                 </div>
               </div>
             )}
-  
+
+            {showUpdateRating && (
+              <div className="mb-6 mt-10">
+                <h2 className="text-xl mb-2">Update Rating</h2>
+                <input
+                  className="border p-2 mb-2 w-full"
+                  type="number"
+                  placeholder="Rating (1-10)"
+                  value={rating}
+                  onChange={(e) => setRating(e.target.value)}
+                />
+                <button
+                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
+                  onClick={handleUpdateRating}
+                >
+                  Update Rating
+                </button>
+              </div>
+            )}
+
             <div className="mb-6 mt-10">
               <h2 className="text-xl mb-2">Input Geolocation</h2>
               <input

@@ -61,11 +61,15 @@ export const idlFactory = ({ IDL }) => {
     created: IDL.Bool,
   });
 
+
+  const Result = IDL.Variant({ 'Ok' : IDL.Null, 'Err' : IDL.Text });
+  
   return IDL.Service({
     compute_area: IDL.Func([IDL.Text], [IDL.Text], []),
     //compute_area: IDL.Func([IDL.Text], [AreaResponse], []), // Uncomment if returning AreaResponse
     compute_geohash: IDL.Func([Geolocation], [IDL.Text], []),
     //compute_geohash: IDL.Func([Geolocation], [AreaResponse], []), // Uncomment if returning AreaResponse
+    update_rating: IDL.Func([IDL.Text, IDL.Nat32], [Result], []),
   });
 };
 

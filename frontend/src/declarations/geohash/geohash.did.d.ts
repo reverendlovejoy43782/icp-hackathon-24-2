@@ -64,9 +64,12 @@ export interface AreaResponse {
   created: boolean; // Indicating if NFT was created
 }
 
+
+
 export interface _SERVICE {
   compute_area: ActorMethod<[string], string>;
   //compute_area: ActorMethod<[string], AreaResponse>;
   compute_geohash: ActorMethod<[Geolocation], string>;
   //compute_geohash: ActorMethod<[Geolocation], AreaResponse>;
+  update_rating: ActorMethod<[string, number], Result>;
 }

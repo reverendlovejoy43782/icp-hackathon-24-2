@@ -488,6 +488,24 @@ async fn compute_area(geohash: String) -> String {
     response.to_string()
 }
 
+// Simple update function to update the rating of an square (this is just a demonstrator, in a real-world scenario, this would be more complex)
+#[update]
+async fn update_rating(ipns_name: String, rating: u32) -> Result<(), String> {
+    if rating < 1 || rating > 10 {
+        return Err("Rating must be between 1 and 10".to_string());
+    }
+
+    IPNS_DATA.with(|ipns_data| {
+        let mut ipns_data = ipns_data.borrow_mut();
+        if let Some(metrics) = ipns_data.get_mut(&ipns_name) {
+            metrics.insert("Rating".to_string(), rating);
+            Ok(())
+        } else {
+            Err("IPNS name not found".to_string())
+        }
+    })
+}
+
 // END METHODS
 
 
