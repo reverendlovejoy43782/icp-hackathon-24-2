@@ -12,7 +12,7 @@ This is a basic version of a decentralized application built on the Internet Com
 
 
 ## We need a Bitcoin-inspired version of Google Maps as a public good
-Our understanding of the world’s surface increasingly comes from “second layers” like Google Maps. These layers are used by humans, cars, and other devices for navigation.
+Our understanding of the world’s surface increasingly comes from “second layers” like Google Maps. These layers are used by humans, cars, and other devices for decision making and navigation.
 
 ### Map apps lack data for important geo decisions
 Current platforms inform decisions like “where to eat?” or “where to buy?” However, they lack the information needed to decide “where to move,” “where to avoid due to high crime rates,” or “which neighborhood most needs public health measures.” These decisions require data on pollution rates over time, flood or hurricane probabilities, and crime rates in specific areas. Furthermore, current second layers do not provide a way to communicate value directly tied to a location. This would enable compensating users for improving an area or donating to victims of a natural catastrophe in a specific region.
@@ -24,14 +24,14 @@ VIDEO
 
 
 ## This application
-... uses a set of canisters on the Internet Computer to create a grid of the world’s surface. Each square in the grid can hold information and value. Users authenticate with Internet Identity and interact with the squares via a React application. They read or contribute information or communicate value to other users.
+... uses a set of canisters on the Internet Computer to create a grid of the world’s surface. Each square in the grid can hold information and value. Users authenticate with Internet Identity and interact with the squares via a React application. They read or contribute information or communicate value to other users. Other devices / systems interact with the squares via the API endpoint.
 
-Users can send value to a square’s address or contribute by adding information, which can be compensated with some of the value held by the square. When an authenticated user first visits a square, its NFT is transferred to the user’s NFT wallet. Owning a square’s NFT does not provide control over the square; it is similar to owning digital art. NFT owners are patrons of the NFT and are encouraged to improve its health metrics and gather donations. They earn part of the square’s income when its health and donation flow are good. 
+Users can send value to a square’s address or contribute by adding information, which can be compensated with some of the value held by the square. When an authenticated user first visits a square, its NFT is transferred to the user’s NFT wallet. Owning a square’s NFT does not provide control over the square; it is similar to owning digital art. NFT owners are patrons of the square. They are encouraged to improve its health metrics and gather donations. They earn part of the square’s income when its health and donation flow are good. 
 
 The application controls the square. A decentralized governance system (e.g., a DAO, to be defined) controls the application. It sets and oversees rules for distributing value to users. The NFT transfer to users is not implemented in this MVP.
 
 ## Under the hood it
-... creates fixed squares where each square is represented by a [geohash](https://en.wikipedia.org/wiki/Geohash). Each square / geohash is a [Dip721 Nft](https://github.com/Psychedelic/DIP721/blob/develop/spec.md) holding information such as an IPNS name pointing to metadata on IPFS. It also holds crypto addresses for Bitcoin, Ether, or USDC. The NFT points to changing information on IPFS like air quality index, crime rate, or car accident rate. This information is regularly updated via APIs or user contributions. The application interacts with Bitcoin or EVM blockchains to show balances and transact Bitcoin, Ether, or USDC between users and squares.
+... creates fixed squares where each square is represented by a [geohash](https://en.wikipedia.org/wiki/Geohash). Each square / geohash is a [Dip721 Nft](https://github.com/Psychedelic/DIP721/blob/develop/spec.md) holding information such as an IPNS name pointing to metadata on IPFS. It also holds crypto addresses for Bitcoin, Ether, or USDC. The NFT points to changing information on IPFS like air quality index, crime rate, or car accident rate. This information is regularly updated via APIs or user contributions. The application interacts with Bitcoin or EVM blockchains to show balances and transact Bitcoin, Ether, or USDC between users and squares. IPNS / IPFS integration is not implemented in this MVP.
 
 ## Architecture
 
@@ -123,7 +123,7 @@ Not in scope for this MVP. This code was cloned but not yet integrated into the 
 - Deploy dip721_nft_container with `dfx deploy dip721_nft_container` and specify geohash canister-id as principal
 - Deploy canisters `basic_ethereum`, `basic_bitcoin`, `internet_identity`
 - Insert canister-ids of dip721_nft_container, basic_ethereum and basic_bitcoin in `geohash/src/lib.rs` init function and `dfx build geohash`, then `dfx deploy --mode=reinstall geohash`
-- In root run `node setupEnv.js` to fill in Canister ids (internet_identity, geohash) in `frontend/.env` from `.dfx/local/canister_ids.json`
+- In root run `node setupEnv.js` to create ENV file in frontend folder and fill in Canister ids (internet_identity, geohash) from `.dfx/local/canister_ids.json`
 - In `/frontend` run `npm run build`
 - In root run `dfx deploy frontend`
 - Open frontend or canister candid UI using  `http://127.0.0.1:8001` (defined in dfx.json)
