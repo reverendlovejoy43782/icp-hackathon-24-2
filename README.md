@@ -12,18 +12,58 @@ Current platforms inform decisions like “where to eat?” or “where to buy?�
 Just as Bitcoin revolutionized currency by making it a decentralized public good, we need a decentralized and tamper-proof public memory and value layer for the world. It is governed by a foundation or DAO and runs on the Internet Computer.
 
 ## This application ...
-... uses a set of canisters on the Internet Computer to create a grid of the world’s surface. Each square in the grid can hold information and value. Users authenticate with Internet Identity and interact with the squares via a React application to read or contribute information or communicate value tied to a specific square to other users.
+... uses a set of canisters on the Internet Computer to create a grid of the world’s surface. Each square in the grid can hold information and value. Users authenticate with Internet Identity and interact with the squares via a React application. They read or contribute information or communicate value to other users.
 
-Users can send value to one of the square’s addresses or contribute to a square by adding information, which can be compensated with some of the value held by the square. When a square is first visited by an authenticated user, its NFT is transferred to the NFT wallet of that user. Possession of a square’s NFT does not give any control over the square; it is similar to owning an NFT of digital art. NFT owners are patrons of the NFT and are encouraged to improve its health metrics and gather donations. They earn part of the square’s income when its health and donation flow are good.
+Users can send value to a square’s address or contribute by adding information, which can be compensated with some of the value held by the square. When an authenticated user first visits a square, its NFT is transferred to the user’s NFT wallet. Owning a square’s NFT does not provide control over the square; it is similar to owning digital art. NFT owners are patrons of the NFT and are encouraged to improve its health metrics and gather donations. They earn part of the square’s income when its health and donation flow are good. 
+
+The application controls the square. A decentralized governance system (e.g., a DAO, to be defined) controls the application. It sets and oversees rules for distributing value to users. The NFT transfer to users is not implemented in this MVP.
 
 ## Under the hood it ...
-... creates fixed squares where each square is represented by a [geohashe](https://en.wikipedia.org/wiki/Geohash). Each square / geohash is a [Dip721 Nft](https://github.com/Psychedelic/DIP721/blob/develop/spec.md) holding information such as an IPNS name pointing to metadata on IPFS. It also holds crypto addresses for Bitcoin, Ether, or USDC. The NFT points to changing information on IPFS like air quality index, crime rate, or car accident rate. This information is regularly updated via APIs or user contributions. The application interacts with Bitcoin or EVM blockchains to show balances and transact Bitcoin, Ether, or USDC between users and squares.
+... creates fixed squares where each square is represented by a [geohash](https://en.wikipedia.org/wiki/Geohash). Each square / geohash is a [Dip721 Nft](https://github.com/Psychedelic/DIP721/blob/develop/spec.md) holding information such as an IPNS name pointing to metadata on IPFS. It also holds crypto addresses for Bitcoin, Ether, or USDC. The NFT points to changing information on IPFS like air quality index, crime rate, or car accident rate. This information is regularly updated via APIs or user contributions. The application interacts with Bitcoin or EVM blockchains to show balances and transact Bitcoin, Ether, or USDC between users and squares.
 
 ## Architecture
 
+## geohash Canister
+
+The Geohash Canister handles geolocation data, converting it into geohashes and decoding geohashes back into coordinates. It serves as the backend, managing calls to dip721_nft_container, basic_bitcoin, and basic_ethereum canisters for minting or looking up NFTs, and querying balance or metadata on IPFS. Some functionality (Ethereum balance, IPFS interaction) is not part of this MVP.
+
+The canister provides three main functions:
+
+- **compute_geohash**: Takes a geolocation (latitude, longitude) and returns the calculated geohash and the geographical bounds (square) it falls within. If no NFT exists, it mints a new one; otherwise, it retrieves existing NFT information.
+    - **Input**: Geolocation (latitude: f64, longitude: f64)
+    - **Output**: latitude and longitude boundaries, computed geohash, NFT information, Bitcoin and Ethereum balances, real-time metrics, and a flag indicating if the NFT was newly created or already existed.
+
+- **compute_area**: Takes a geohash and decodes it back into coordinates, then calculates the geographical bounds (square) for these coordinates. If no NFT exists, it mints a new one; otherwise, it retrieves existing NFT information.
+    - **Input**: Geohash (String)
+    - **Output**: latitude and longitude boundaries, original geohash, NFT information, Bitcoin and Ethereum balances, real-time metrics, and a flag indicating if the NFT was newly created or already existed.
+
+- **update_rating**: Allows users to update the rating of a square, serving as a simple MVP for user-contributed information.
+    - **Input**: IPNS name (String), Rating (u32)
+    - **Output**: Result indicating success or failure.
+    - **What it does**: Updates the rating for the specified square, provided the rating is within the valid range (1 to 10).
+
+
 ### frontend canister
 
+The frontend application is designed to interact with the Geohash Canister on the Internet Computer. It allows users to authenticate, submit geolocations or geohashes, and update ratings for specific squares. The main features include:
+
+- **User Authentication**: Users authenticate with Internet Identity, enabling secure interaction with the application.
+
+- **Geolocation Submission**: Users can input their geolocation (latitude and longitude) to get information about the corresponding square, including the geohash, geographical bounds, NFT information, and real-time metrics.
+
+- **Geohash Submission**: Users can input a geohash to retrieve information about the square it represents, including geographical bounds, NFT information, and real-time metrics.
+
+- **Update Rating**: Authenticated users can update the rating of a specific square, contributing to the user-generated data for that area.
+
+- **Data Display**: The application displays detailed information about the square, including NFT metadata, Bitcoin and Ethereum addresses and balances, and real-time metrics like air quality, crime rate, and car accident rate.
+
+- **Fetch Geolocation**: Users can fetch their current geolocation using the browser's geolocation API to simplify the submission process.
+
+This frontend serves as the interface for interacting with the geolocation data and NFTs managed by the Geohash Canister, providing a user-friendly way to read and contribute information tied to specific squares on the world's surface.
+
 ### basic_bitcoin canister
+
+
 
 ### basic_ethereum canister
 
@@ -36,45 +76,7 @@ Users can send value to one of the square’s addresses or contribute to a squar
 
 # 2. Tech
 
-## 2.1 Geohash Canister
-
-The Geohash Canister is designed to handle geolocation data and convert it into geohashes, as well as decode geohashes back into geographical coordinates. It serves as the backend for the frontend, handling calls to the dip721_nft_container, basic_bitcoin, and basic_ethereum canisters to mint or look up NFTs, and query information about balances or metadata on IPFS. Some of this functionality (Ethereum balance, IPFS interaction) is not part of this MVP though. 
-
-The canister provides three main functionalities:
-
-- **compute_geohash**: This function takes a geolocation (latitude and longitude) as input and returns both the calculated geohash and the geographical bounds (square) that the geolocation falls within. If an NFT for the square does not exist, it mints a new NFT; otherwise, it retrieves the existing NFT information.
-    - **Input**: Geolocation (latitude: f64, longitude: f64)
-    - **Output**: AreaResponse which includes the latitude and longitude boundaries (lat_start, lon_start, lat_end, lon_end), the computed geohash, the NFT information, Bitcoin and Ethereum balances, real-time metrics, and a flag indicating if the NFT was newly created or already existed.
-    - **What it does**: The function computes the geohash for the provided geolocation, determines the geographical area (square bounds) that encompasses this geolocation, handles NFT minting or retrieval, and provides real-time metrics and cryptocurrency balances.
-
-- **compute_area**: This function takes a geohash as input and decodes it back into geographical coordinates. It then calculates the geographical bounds (square) for these coordinates. If an NFT for the square does not exist, it mints a new NFT; otherwise, it retrieves the existing NFT information.
-    - **Input**: Geohash (String)
-    - **Output**: AreaResponse which includes the latitude and longitude boundaries (lat_start, lon_start, lat_end, lon_end), the original geohash, the NFT information, Bitcoin and Ethereum balances, real-time metrics, and a flag indicating if the NFT was newly created or already existed.
-    - **What it does**: The function decodes the provided geohash into latitude and longitude, calculates the geographical area (square bounds) that encompasses these coordinates, handles NFT minting or retrieval, and provides real-time metrics and cryptocurrency balances.
-
-- **update_rating**: This function allows users to update the rating of a specific square, serving as a simple MVP for user-contributed information about a square.
-    - **Input**: IPNS name (String), Rating (u32)
-    - **Output**: Result indicating success or failure
-    - **What it does**: The function updates the rating for the specified square, provided the rating is within the valid range (1 to 10).
-
 ## 2.2 Frontend Canister Logic
-
-The Frontend Canister is responsible for providing the user interface to interact with the Geohash Canister. It allows users to input geolocation data or geohashes and visualize the corresponding geographical bounds on a map. The main functionalities include:
-
-- **Fetching Geolocation**: Allows the user to fetch their current geolocation using the browser's geolocation API.
-    - **Implementation**: A button triggers the geolocation fetch and updates the state with the retrieved latitude and longitude.
-
-- **Submitting Geolocation**: Submits the provided geolocation to the Geohash Canister to compute the corresponding geohash, geographical bounds, and NFT information.
-    - **Implementation**: Sends a request to `compute_geohash` with the geolocation and updates the map with the returned square bounds, geohash, and NFT information. Displays a message indicating if the NFT was newly created or already existed.
-
-- **Submitting Geohash**: Submits the provided geohash to the Geohash Canister to compute the corresponding geographical bounds and NFT information.
-    - **Implementation**: Sends a request to `compute_area` with the geohash and updates the map with the returned square bounds, geohash, and NFT information. Displays a message indicating if the NFT was newly created or already existed.
-
-- **Displaying Map and Markers**: Visualizes the geographical bounds and geohash on a Google Map.
-    - **Implementation**: Uses the Google Maps JavaScript API to render the map and markers. AdvancedMarkerElement is used to ensure future compatibility with Google Maps API.
-
-- **Displaying NFT Information**: Shows the NFT details including owner, token ID, metadata, and content.
-    - **Implementation**: Retrieves and displays the NFT information received from the Geohash Canister in a structured format.
 
 ## Comments
 Please note:
