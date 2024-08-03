@@ -9,7 +9,7 @@ pub struct Geolocation {
     pub longitude: f64,
 }
 
-// Define a struct for area response to be used with Candid
+// Define a struct for area response to be used with Candid (not used as of now)
 #[derive(CandidType, Deserialize, Debug)]
 pub struct AreaResponse {
     pub lat_start: f64,

@@ -171,6 +171,19 @@ function App() {
   
   return (
     <>
+      {/* Styles */}
+      <style>
+        {`
+          .aligned-table th, .aligned-table td {
+            width: 25%; /* Adjust width as needed */
+          }
+          .aligned-table {
+            table-layout: fixed;
+          }
+        `}
+      </style>
+
+
       {/* Top navigation bar */}
       <div className="bg-indigo-600 text-white py-4">
         <div className="container mx-auto px-4 flex justify-between items-center">
@@ -202,45 +215,80 @@ function App() {
                 <GeolocationMap location={location} bounds={bounds} geohash={mapGeohash} isUserLocation={isUserLocation} />
               </div>
             )}
-  
+
             {response && (
               <div className="mt-10">
+                {/*
                 {response.created ? (
                   <p className="text-green-500 font-bold">NFT for this square created with Token ID {response.nft_square.token_id}</p>
                 ) : (
                   <p className="text-blue-500 font-bold">NFT for square exists with Token ID {response.nft_square.token_id}</p>
-                )}
+                )}*/}
                 <div className="relative overflow-x-auto">
-                <table className="w-full text-sm text-left text-gray-500">
-                  <thead className="text-xs text-gray-700 uppercase bg-gray-50">
-                    <tr>
-                      <th scope="col" className="px-6 py-3">Dimension</th>
-                      <th scope="col" className="px-6 py-3">Value</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="odd:bg-white even:bg-gray-50 border-b">
-                      <th scope="row" className="px-6 py-4 font-medium text-gray-900">Geohash</th>
-                      <td className="px-6 py-4">{response.geohash}</td>
-                    </tr>
-                    <tr className="odd:bg-white even:bg-gray-50 border-b">
-                      <th scope="row" className="px-6 py-4 font-medium text-gray-900">Bitcoin Address</th>
-                      <td className="px-6 py-4">{response.nft_square.metadata[0].key_val_data.find(kv => kv.key === 'bitcoin_address').val.TextContent}</td>
-                    </tr>
-                    <tr className="odd:bg-white even:bg-gray-50 border-b">
-                      <th scope="row" className="px-6 py-4 font-medium text-gray-900">Bitcoin Balance</th>
-                      <td className="px-6 py-4">{response.bitcoin_balance}</td>
-                    </tr>
-                    <tr className="odd:bg-white even:bg-gray-50 border-b">
-                      <th scope="row" className="px-6 py-4 font-medium text-gray-900">Ethereum Address</th>
-                      <td className="px-6 py-4">{response.nft_square.metadata[0].key_val_data.find(kv => kv.key === 'ethereum_address').val.TextContent}</td>
-                    </tr>
-                    <tr className="odd:bg-white even:bg-gray-50 border-b">
-                      <th scope="row" className="px-6 py-4 font-medium text-gray-900">Ethereum Balance</th>
-                      <td className="px-6 py-4">{response.ethereum_balance}</td>
-                    </tr>
-                  </tbody>
-                </table>
+                  {/* Table for NFT Information */}
+                  <h2 className="text-xl mb-2 text-black">NFT Information of square (Token ID: {response.nft_square.token_id})</h2>
+                  <table className="aligned-table w-full text-sm text-left text-gray-500">
+                    <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                      <tr>
+                        <th scope="col" className="px-6 py-3">Dimension</th>
+                        <th scope="col" className="px-6 py-3">Value</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="odd:bg-white even:bg-gray-50 border-b">
+                        <th scope="row" className="px-6 py-4 font-medium text-gray-900">Geohash</th>
+                        <td className="px-6 py-4">{response.geohash}</td>
+                      </tr>
+                      <tr className="odd:bg-white even:bg-gray-50 border-b">
+                        <th scope="row" className="px-6 py-4 font-medium text-gray-900">IPNS Name</th>
+                        <td className="px-6 py-4">{response.nft_square.metadata[0].key_val_data.find(kv => kv.key === 'ipns_id').val.TextContent}</td>
+                      </tr>
+                      <tr className="odd:bg-white even:bg-gray-50 border-b">
+                        <th scope="row" className="px-6 py-4 font-medium text-gray-900">Bitcoin Address</th>
+                        <td className="px-6 py-4">{response.nft_square.metadata[0].key_val_data.find(kv => kv.key === 'bitcoin_address').val.TextContent}</td>
+                      </tr>
+                      <tr className="odd:bg-white even:bg-gray-50 border-b">
+                        <th scope="row" className="px-6 py-4 font-medium text-gray-900">Ethereum Address</th>
+                        <td className="px-6 py-4">{response.nft_square.metadata[0].key_val_data.find(kv => kv.key === 'ethereum_address').val.TextContent}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  {/* Table for Real-Time Metrics */}
+                  <h2 className="text-xl mb-2 text-black mt-6">Real-Time Metrics</h2>
+                  <table className="aligned-table w-full text-sm text-left text-gray-500">
+                    <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                      <tr>
+                        <th scope="col" className="px-6 py-3">Dimension</th>
+                        <th scope="col" className="px-6 py-3">Value</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="odd:bg-white even:bg-gray-50 border-b">
+                        <th scope="row" className="px-6 py-4 font-medium text-gray-900">Bitcoin Balance</th>
+                        <td className="px-6 py-4">{response.bitcoin_balance}</td>
+                      </tr>
+                      <tr className="odd:bg-white even:bg-gray-50 border-b">
+                        <th scope="row" className="px-6 py-4 font-medium text-gray-900">Ethereum Balance</th>
+                        <td className="px-6 py-4">{response.ethereum_balance}</td>
+                      </tr>
+                      <tr className="odd:bg-white even:bg-gray-50 border-b">
+                        <th scope="row" className="px-6 py-4 font-medium text-gray-900">Air quality index</th>
+                        <td className="px-6 py-4">{response.real_time_metrics["Air quality index"]}</td>
+                      </tr>
+                      <tr className="odd:bg-white even:bg-gray-50 border-b">
+                        <th scope="row" className="px-6 py-4 font-medium text-gray-900">Crime Rate</th>
+                        <td className="px-6 py-4">{response.real_time_metrics["Crime rate"]}</td>
+                      </tr>
+                      <tr className="odd:bg-white even:bg-gray-50 border-b">
+                        <th scope="row" className="px-6 py-4 font-medium text-gray-900">Car Accident Rate</th>
+                        <td className="px-6 py-4">{response.real_time_metrics["Car accident rate"]}</td>
+                      </tr>
+                      <tr className="odd:bg-white even:bg-gray-50 border-b">
+                        <th scope="row" className="px-6 py-4 font-medium text-gray-900">Rating</th>
+                        <td className="px-6 py-4">{response.real_time_metrics.Rating}</td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
             )}

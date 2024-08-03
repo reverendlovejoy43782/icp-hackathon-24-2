@@ -42,6 +42,10 @@ use grid_generator::decode_geohash;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use serde_json::json;
+use sha2::{Sha256, Digest};
+use base58::{ToBase58};
+//use rand::Rng;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 
 // END IMPORTS AND PRAGMAS
@@ -60,10 +64,20 @@ async fn fetch_ethereum_address(input: GetEthereumAddressInput) -> Result<String
 // START LOCAL STORAGE
 
 thread_local! {
+
+    // NFT canister ID
     static DIP721_CANISTER_ID: RefCell<Option<Principal>> = RefCell::new(None);
-    static GEOHASH_TO_TOKEN_ID: RefCell<HashMap<String, u64>> = RefCell::new(HashMap::new());
+    
+    // Bitcoin canister ID
     static BASIC_BITCOIN_CANISTER_ID: RefCell<Option<Principal>> = RefCell::new(None);
+
+    // Ethereum canister ID
     static BASIC_ETHEREUM_CANISTER_ID: RefCell<Option<Principal>> = RefCell::new(None);
+    // Mapping of geohash to token ID
+    static GEOHASH_TO_TOKEN_ID: RefCell<HashMap<String, u64>> = RefCell::new(HashMap::new());
+
+    // Mapping of IPNS data (mocked for now, it should point to the changing IPFS CID but we don't have IPFS integration yet, so we map to a HashMap)
+    static IPNS_DATA: RefCell<HashMap<String, HashMap<String, u32>>> = RefCell::new(HashMap::new());
 }
 
 // END LOCAL STORAGE
@@ -162,20 +176,34 @@ pub fn post_upgrade() {
     ic_cdk::println!("Post-upgrade BASIC_BITCOIN_CANISTER_ID: {:?}", bitcoin_canister_id);
 }
 
-/*
-// Function to get the Bitcoin address
-async fn get_bitcoin_address_update() -> String {
-    let bitcoin_canister_id = BASIC_BITCOIN_CANISTER_ID.with(|id| id.borrow().clone().expect("Bitcoin canister ID not set"));
-    ic_cdk::println!("Retrieved Bitcoin canister ID in get_bitcoin_address_update: {:?}", bitcoin_canister_id);
-    match get_bitcoin_address(bitcoin_canister_id).await {
-        Ok(address) => address,
-        Err(err) => format!("Failed to get Bitcoin address: {}", err),
-    }
+
+
+// Helper function to generate a unique IPNS ID based on the geohash
+fn generate_ipns_id(geohash: &str) -> String {
+    let mut hasher = Sha256::new();
+    hasher.update(geohash);
+    let result = hasher.finalize();
+    let ipns_id = format!("ipns-{}", result.to_base58());
+    ipns_id
 }
-*/
+
+
+// Function to print all IPNS names and their corresponding metrics
+fn print_ipns_data() {
+    IPNS_DATA.with(|ipns_data| {
+        let ipns_data = ipns_data.borrow();
+        for (ipns_id, metrics) in ipns_data.iter() {
+            ic_cdk::println!("XXXXXXXXXXXXXXXXXXXXMOCKED DATA FOR EACH IPNS Name: {}", ipns_id);
+            for (metric_name, value) in metrics {
+                ic_cdk::println!("  {}: {}", metric_name, value);
+            }
+        }
+    });
+}
+
 
 // Function to mint NFT or get existing NFT for a given geohash
-async fn get_or_mint_nft_square(nearest_geohash: &String) -> (Option<Nft>, u64, u64, bool) {
+async fn get_or_mint_nft_square(nearest_geohash: &String) -> (Option<Nft>, u64, u64, Option<HashMap<String, u32>>, bool) {
 
     let bitcoin_canister_id = get_bitcoin_canister_id();
     //let ethereum_canister_id = get_ethereum_canister_id();
@@ -192,6 +220,8 @@ async fn get_or_mint_nft_square(nearest_geohash: &String) -> (Option<Nft>, u64, 
                     // Print statement to log the NFT data
                     ic_cdk::println!("GEOHASH_LIB.RS_Existing NFT data: {:?}", nft);
 
+                    // START retrieving addresses / ids from NFT metadata to then query real time metrics
+
                     // Extract the Bitcoin address from the NFT metadata
                     let bitcoin_address = nft.metadata.iter().find_map(|metadata| {
                         metadata.key_val_data.iter().find_map(|kv| {
@@ -206,6 +236,23 @@ async fn get_or_mint_nft_square(nearest_geohash: &String) -> (Option<Nft>, u64, 
                             }
                         })
                     });
+                    
+                    // Extract the IPNS name from the NFT metadata
+                    let ipns_name = nft.metadata.iter().find_map(|metadata| {
+                        metadata.key_val_data.iter().find_map(|kv| {
+                            if kv.key == "ipns_id" {
+                                if let MetadataVal::TextContent(id) = &kv.val {
+                                    Some(id.clone())
+                                } else {
+                                    None
+                                }
+                            } else {
+                                None
+                            }
+                        })
+                    });
+
+                    // START MOCKED REAL TIME METRICS OF SQUARES
 
                     // Query the Bitcoin balance if the address was found
                     let bitcoin_balance = if let Some(address) = bitcoin_address {
@@ -217,18 +264,63 @@ async fn get_or_mint_nft_square(nearest_geohash: &String) -> (Option<Nft>, u64, 
                         ic_cdk::println!("Bitcoin address not found in NFT metadata");
                         0
                     };
+                    
+                    // Query the metrics from the IPNS data if the IPNS name was found
+                    let real_time_metrics = if let Some(ipns_name) = ipns_name {
+                        IPNS_DATA.with(|ipns_data| {
+                            let ipns_data = ipns_data.borrow();
+                            ipns_data.get(&ipns_name).cloned()
+                        })
+                    } else {
+                        ic_cdk::println!("IPNS name not found in NFT metadata");
+                        None
+                    };
 
-                    (Some(nft), bitcoin_balance, ethereum_balance, false)
+                    if let Some(metrics) = &real_time_metrics {
+                        ic_cdk::println!("Real-time metrics: {:?}", metrics);
+                    }
+
+                    // END MOCKED REAL TIME METRICS OF SQUARES
+
+                    (Some(nft), bitcoin_balance, ethereum_balance, real_time_metrics, false)
                 },
                 Err(err) => {
                     ic_cdk::println!("GEOHASH_LIB.RS_Failed to get NFT by geohash: {:?}", err);
-                    (None, 0, ethereum_balance, false)
+                    (None, 0, ethereum_balance, None, false)
                 }
             }
         },
         None => {
             // Token ID does not exist, mint a new NFT
             ic_cdk::println!("GEOHASH_LIB.RS_New square detected: {:?}", nearest_geohash);
+
+
+            // START MOCKED REAL TIME METRICS OF SQUARES
+            // Generate mocked IPNS ID (to be implemented: create real ID, INPS then maps to the changing IPFS CIDs for the data of each square)
+            let ipns_id = generate_ipns_id(nearest_geohash);  // we pass in the geohash to generate the ipns_id          
+            
+            let mut rng = 0;
+            let air_quality_index = 50;
+            let crime_rate = 50;
+            let car_accident_rate = 50;;
+
+            IPNS_DATA.with(|ipns_data| {
+                let mut ipns_data = ipns_data.borrow_mut();
+                ipns_data.insert(ipns_id.clone(), {
+                    let mut metrics = HashMap::new();
+                    metrics.insert("Rating".to_string(), 0);
+                    metrics.insert("Air quality index".to_string(), air_quality_index);
+                    metrics.insert("Crime rate".to_string(), crime_rate);
+                    metrics.insert("Car accident rate".to_string(), car_accident_rate);
+                    metrics
+                });
+            });
+
+            // Print the IPNS data after insertion
+            ic_cdk::println!("IPNS data after insertion:");
+            print_ipns_data();
+            // END MOCKED REAL TIME METRICS OF SQUARES
+            
             
             // Get the Bitcoin address
             ic_cdk::println!("Retrieving Bitcoin canister ID before calling get_bitcoin_canister_id()");
@@ -259,7 +351,8 @@ async fn get_or_mint_nft_square(nearest_geohash: &String) -> (Option<Nft>, u64, 
 
             let properties = SquareProperties {
                 geohash: nearest_geohash.clone(),
-                metadata: "".to_string(), // Empty metadata, as we only want to store geohash
+                metadata: ipns_id.clone(),
+                //metadata: "".to_string(), 
                 wallet,
             };
 
@@ -281,18 +374,21 @@ async fn get_or_mint_nft_square(nearest_geohash: &String) -> (Option<Nft>, u64, 
                         Ok(nft) => {
                             ic_cdk::println!("GEOHASH_LIB.RS_NFT minted successfully with nft: {:?}", nft);
                             
-                            (Some(nft), bitcoin_balance, ethereum_balance, true)
+                            (Some(nft), bitcoin_balance, ethereum_balance, Some(IPNS_DATA.with(|ipns_data| {
+                                let ipns_data = ipns_data.borrow();
+                                ipns_data.get(&ipns_id).cloned()
+                            }).unwrap()), true)
                         },
                         Err(err) => {
                             ic_cdk::println!("GEOHASH_LIB.RS_Failed to get NFT by geohash after minting: {:?}", err);
-                            (None, bitcoin_balance, ethereum_balance, false)
+                            (None, bitcoin_balance, ethereum_balance, None, false)
                         }
                     }
                 },
                 Err(err) => {
                     // Handle error minting NFT
                     ic_cdk::println!("GEOHASH_LIB.RS_Failed to mint NFT: {:?}", err);
-                    (None, bitcoin_balance, ethereum_balance, false)
+                    (None, bitcoin_balance, ethereum_balance, None, false)
                 },
             }
         }
@@ -315,7 +411,7 @@ async fn compute_geohash(geolocation: Geolocation) -> String {
     let (nearest_geohash, bounds) = find_nearest_geohash_with_bounds(geolocation.latitude, geolocation.longitude);
 
     // Helper function to get or mint the NFT square
-    let (nft_square, bitcoin_balance, ethereum_balance, created) = get_or_mint_nft_square(&nearest_geohash).await;
+    let (nft_square, bitcoin_balance, ethereum_balance, real_time_metrics, created) = get_or_mint_nft_square(&nearest_geohash).await;
 
     // Simplified logging
     ic_cdk::println!("GEOHASH_LIB:RS_COMPUTE_GEOHASH_NFT_SQUARE: {:?}, CREATED: {:?}", nft_square, created);
@@ -337,6 +433,7 @@ async fn compute_geohash(geolocation: Geolocation) -> String {
         }),
         "bitcoin_balance": bitcoin_balance,
         "ethereum_balance": ethereum_balance,
+        "real_time_metrics": real_time_metrics,
         "created": created,
     });
 
@@ -359,7 +456,7 @@ async fn compute_area(geohash: String) -> String {
     let (nearest_geohash, bounds) = find_nearest_geohash_with_bounds(coord.y, coord.x);
 
     // Helper function to get or mint the NFT square
-    let (nft_square, bitcoin_balance, ethereum_balance, created) = get_or_mint_nft_square(&nearest_geohash).await;
+    let (nft_square, bitcoin_balance, ethereum_balance, real_time_metrics, created) = get_or_mint_nft_square(&nearest_geohash).await;
 
     ic_cdk::println!("GEOHASH_LIB:RS_COMPUTE_AREA_NFT_SQUARE: {:?}, CREATED: {:?}", nft_square, created);
 
@@ -380,6 +477,7 @@ async fn compute_area(geohash: String) -> String {
         }),
         "bitcoin_balance": bitcoin_balance,
         "ethereum_balance": ethereum_balance,
+        "real_time_metrics": real_time_metrics,
         "created": created,
     });
 

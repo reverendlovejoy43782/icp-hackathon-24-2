@@ -8,6 +8,7 @@ use std::collections::HashMap;
 use crate::types::{MetadataDesc, MetadataPart, MetadataPurpose, MetadataVal, SquareProperties, MintReceipt}; // Import the common types
 use crate::{get_dip721_canister_id, update_geohash_to_token_id};
 
+
 // END IMPORTS AND PRAGMAS
 
 // START HELPER FUNCTIONS
@@ -19,6 +20,7 @@ pub fn create_metadata(properties: SquareProperties) -> MetadataDesc {
     key_val_data.insert("geohash".to_string(), MetadataVal::TextContent(properties.geohash));
     key_val_data.insert("bitcoin_address".to_string(), MetadataVal::TextContent(properties.wallet.bitcoin));
     key_val_data.insert("ethereum_address".to_string(), MetadataVal::TextContent(properties.wallet.ether));
+    key_val_data.insert("ipns_id".to_string(), MetadataVal::TextContent(properties.metadata.clone())); // Use metadata as ipns_id
 
 
     // Define MetadataPart with the required fields

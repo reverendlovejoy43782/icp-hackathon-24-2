@@ -9,9 +9,8 @@ ic-cdk = "0.15.0"
 #ic-cdk = "0.5.7"
 ic-cdk-macros = "0.15.0"
 #ic-cdk-macros = "0.5.7"
-rand = "0.8"
-getrandom = { version = "0.2.3", features = ["js"] }
-dotenvy = "0.15.6"
+
+
 
 # Dependencies for serialization and deserialization
 serde = "1.0"
@@ -23,6 +22,15 @@ geohash = "0.13.1"
 # Candid dependency for Candid interface definitions
 candid = "0.10.6"
 #candid = "0.7.9"
+
+# Random number / id generation
+rand = "0.8"
+getrandom = { version = "0.2.3", features = ["js"] }
+sha2 = "0.9"
+base58 = "0.2.0"
+
+# dotenv for loading environment variables (does not work as of now, not used)
+dotenvy = "0.15.6"
 
 
 [patch.crates-io]
