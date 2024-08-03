@@ -4,8 +4,8 @@ This is a basic version of a decentralized application built on the Internet Com
 
 # Table of Contents
 - [Introduction](#we-need-a-bitcoin-inspired-version-of-google-maps-as-a-public-good)
-- [Use case](#this-application)
-- [Technical overview](#Under-the-hood-it)
+- [Use case](#this-application-.-.-.)
+- [Technical overview](#Under-the-hood-it-.-.-.)
 - [Architecture](#Architecture)
 - [Run it yourself](#How-to-run-this-application-locally)
 
@@ -121,3 +121,5 @@ Not in scope for this MVP. This code was cloned but not yet integrated into the 
 - In root run `node setupEnv.js` to fill in Canister ids (internet_identity, geohash) in `frontend/.env` from `.dfx/local/canister_ids.json`
 - In `/frontend` run `npm run build`
 - In root run `dfx deploy frontend`
+- Open frontend or canister candid UI using  `http://127.0.0.1:8001` (defined in dfx.json)
+
