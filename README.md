@@ -4,15 +4,16 @@
 
 
 ### Map apps lack data for important geo decisions
-Our understanding of the world’s surface increasingly comes from “second layers” like Google Maps. They inform decisions like "Where to eat" or "where to buy". They lack to inform us on "where to move", "where to establish a business", or "which neighbourhood is in most need of public health measures". These decisions need information like pollution rate over time, flood / hurricane probability or major diseases rate in a certain area. Furthermore do current second layers not provide a way to directly and tied to a location communicate value. That would enable compensating users for trying to improve a place or donating to victims of a natural catastrophe in a certain region.
+Our understanding of the world’s surface increasingly comes from “second layers” like Google Maps. They inform decisions like “where to eat” or “where to buy.” However, they lack the information needed to decide “where to move,” “where to establish a business,” or “which neighborhood most needs public health measures.” These decisions require data on pollution rates over time, flood or hurricane probabilities, or major disease rates in a specific area. Furthermore, current second layers do not provide a way to communicate value directly tied to a location. This would enable compensating users for improving a place or donating to victims of a natural catastrophe in a specific region.
 
 
 ### We need trusted public memory and value layer of world’s surface
-Just as Bitcoin revolutionized currency by making it a decentralized public good, we need a decentralized and tamper-proof public memory and value layer of the world.
+Just as Bitcoin revolutionized currency by making it a decentralized public good, we need a decentralized and tamper-proof public memory and value layer for the world. It is governed by a foundation or DAO and runs on the Internet Computer.
 
-This application uses a set of canisters on the Internet Computer to create a grid of fixed squares of the worlds surface. Each square can hold information and value. Users authenticate with Internet Identity. They interact with squares via a react application to read or contribute information or communicate value to other users.
+### Decentralized datalayer on ICP
+This application uses a set of canisters on the Internet Computer to create a grid of fixed squares on the world’s surface. Each square can hold information and value. Users authenticate with Internet Identity and interact with squares via a React application to read or contribute information or communicate value tied to a specific square to other users.
 
-It uses [geohashes](https://en.wikipedia.org/wiki/Geohash) to create a grid of squares of the worlds surface. Each square is an nft holding information like IPNS name to store metadata on IPFS or crypto addresses like Bitcoin address and ethereum address. The nft metadata points to information on IPFS like air quality index, crime rate or car accident rate . It also points to several blockchains to show value balances like Bitcoin or USDC.
+It uses [geohashes](https://en.wikipedia.org/wiki/Geohash) to create a grid of squares of the worlds surface. Each square is an nft holding fixed information like IPNS name to store metadata on IPFS or crypto addresses like Bitcoin address and Ethereum address. The nft metadata points to changing information on IPFS like air quality index, crime rate or car accident rate. The application also interacts with blockchains to show value balances like Bitcoin or USDC or transact value.
 
 Users authenticate with Internet Identity. They can contribute to a square by adding information to be compensated with some of the value held by the square. 
 
