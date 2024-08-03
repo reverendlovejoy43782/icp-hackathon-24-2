@@ -9,7 +9,7 @@ This is a basic version of a decentralized application built on the Internet Com
 - [Architecture](#Architecture)
 - [Run it yourself](#How-to-run-this-application-locally)
 
-
+Watch the application demo video: https://www.loom.com/share/a2f56f02e9bc4b2091c5212f1fe0aaf9?sid=d67f2958-cc7c-4713-93f4-9f3263b7e97c
 
 ## We need a Bitcoin-inspired version of Google Maps as a public good
 Our understanding of the world’s surface increasingly comes from “second layers” like Google Maps. These layers are used by humans, cars, and other devices for decision making and navigation.

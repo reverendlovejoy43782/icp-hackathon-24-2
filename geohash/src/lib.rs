@@ -89,21 +89,21 @@ thread_local! {
 fn init() {
 
     // manually loading canister ids for now (mvp only)
-    let dip721_canister_id = "be2us-64aaa-aaaaa-qaabq-cai";
+    let dip721_canister_id = "br5f7-7uaaa-aaaaa-qaaca-cai";
     ic_cdk::println!("Initializing with DIP721_CANISTER_ID: {:?}", dip721_canister_id);
     let dip721_canister_principal = Principal::from_text(dip721_canister_id).expect("Invalid hardcoded DIP721_CANISTER_ID principal");
     set_dip721_canister_id(Some(dip721_canister_principal));
     ic_cdk::println!("DIP721_CANISTER_ID set to: {:?}", dip721_canister_principal);
 
 
-    let basic_bitcoin_canister_id = "bd3sg-teaaa-aaaaa-qaaba-cai";
+    let basic_bitcoin_canister_id = "b77ix-eeaaa-aaaaa-qaada-cai";
     ic_cdk::println!("Initializing with BASIC_BITCOIN_CANISTER_ID: {:?}", basic_bitcoin_canister_id);
     let basic_bitcoin_canister_principal = Principal::from_text(basic_bitcoin_canister_id).expect("Invalid BASIC_BITCOIN_CANISTER_ID principal");
     set_bitcoin_canister_id(Some(basic_bitcoin_canister_principal));
     ic_cdk::println!("BASIC_BITCOIN_CANISTER_ID set to: {:?}", basic_bitcoin_canister_principal);
 
 
-    let basic_ethereum_canister_id = "bw4dl-smaaa-aaaaa-qaacq-cai";
+    let basic_ethereum_canister_id = "bd3sg-teaaa-aaaaa-qaaba-cai";
     ic_cdk::println!("Initializing with BASIC_ETHEREUM_CANISTER_ID: {:?}", basic_ethereum_canister_id);
     let basic_ethereum_canister_principal = Principal::from_text(basic_ethereum_canister_id).expect("Invalid BASIC_ETHEREUM_CANISTER_ID principal");
     set_ethereum_canister_id(Some(basic_ethereum_canister_principal));
