@@ -2,9 +2,13 @@
 This is a basic version of a decentralized application built on the Internet Computer. It creates a geo-information platform that serves as a public good for everyone.
 
 
-
 # Table of Contents
-- [Introduction](#iWe need a Bitcoin-inspired version of Google Maps as a public good)
+- [Introduction](#we-need-a-bitcoin-inspired-version-of-google-maps-as-a-public-good)
+- [Use case](#this-application)
+- [Technical overview](#Under-the-hood-it)
+- [Architecture](#Architecture)
+- [Run it yourself](#How-to-run-this-application-locally)
+
 
 
 ## We need a Bitcoin-inspired version of Google Maps as a public good
@@ -12,7 +16,6 @@ Our understanding of the world’s surface increasingly comes from “second lay
 
 ### Map apps lack data for important geo decisions
 Current platforms inform decisions like “where to eat?” or “where to buy?” However, they lack the information needed to decide “where to move,” “where to avoid due to high crime rates,” or “which neighborhood most needs public health measures.” These decisions require data on pollution rates over time, flood or hurricane probabilities, and crime rates in specific areas. Furthermore, current second layers do not provide a way to communicate value directly tied to a location. This would enable compensating users for improving an area or donating to victims of a natural catastrophe in a specific region.
-
 
 ### We need a trusted public memory and value layer of world’s surface
 Just as Bitcoin revolutionized currency by making it a decentralized public good, we need a decentralized and tamper-proof public memory and value layer for the world. It is governed by a foundation or DAO and runs on the Internet Computer.
@@ -29,7 +32,7 @@ The application controls the square. A decentralized governance system (e.g., a 
 
 ## Architecture
 
-## geohash Canister
+### geohash Canister
 
 The Geohash Canister handles geolocation data, converting it into geohashes and decoding geohashes back into coordinates. It serves as the backend, managing calls to dip721_nft_container, basic_bitcoin, and basic_ethereum canisters for minting or looking up NFTs, and querying balance or metadata on IPFS. Some functionality (Ethereum balance, IPFS interaction) is not part of this MVP.
 
@@ -65,25 +68,56 @@ The frontend application is designed to interact with the Geohash Canister on th
 
 - **Fetch Geolocation**: Users can fetch their current geolocation using the browser's geolocation API to simplify the submission process.
 
-This frontend serves as the interface for interacting with the geolocation data and NFTs managed by the Geohash Canister, providing a user-friendly way to read and contribute information tied to specific squares on the world's surface.
-
 ### basic_bitcoin canister
 
+The Basic Bitcoin Canister is designed to handle Bitcoin address generation and balance retrieval. This canister code was cloned from [basic_bitcoin example repo](https://github.com/dfinity/examples/tree/master/rust/basic_bitcoin). Changes made: It ensures that each square geohash generates a unique Bitcoin address, with the same geohash always producing the same address.
 
+- **get_p2pkh_address**: This function takes a geohash as input and returns a Bitcoin address derived from it.
+    - **Input**: Geohash (String)
+    - **Output**: Bitcoin address (String)
+    - **What it does**: The function converts the geohash into a derivation path and uses it to generate a Bitcoin address. The same geohash will always produce the same address.
+
+- **get_balance**: This function takes a Bitcoin address as input and returns its balance.
+    - **Input**: Bitcoin address (String)
+    - **Output**: Balance (u64)
+    - **What it does**: The function queries the Bitcoin network to retrieve the balance of the given address.
 
 ### basic_ethereum canister
 
+The Basic Ethereum Canister was cloned from [basic_ethereum example repo](https://github.com/dfinity/examples/tree/master/rust/basic_ethereum) and modified to generate Ethereum addresses based on geohashes and the calling principal. This method is a simple solution for the MVP and may be changed later.
+
+- **ethereum_address**: This function takes an optional owner principal and a geohash as input and returns an Ethereum address derived from them.
+    - **Input**: Owner (Option<Principal>), Geohash (String)
+    - **Output**: Ethereum address (String)
+    - **What it does**: The function generates an Ethereum address using the provided geohash and the calling principal. This ensures that each square's geohash and the calling principal produce a unique Ethereum address. 
+
 ### dip721_nft_container
 
-### geohash canister
+The DIP721 NFT Container mints NFTs geohashes, IPNS names, and crypto addresses in the metadata. It looks up NFTs with their metadata. This canister code was cloned from [this repo](https://github.com/dfinity/examples/tree/master/rust/dip721-nft-container). 
 
+- **get_metadata**: This function retrieves the metadata of an NFT by its token ID.
+    - **Input**: Token ID (u64)
+    - **Output**: MetadataDesc
+    - **What it does**: The function retrieves and returns the metadata associated with the given token ID. If the token ID is invalid, an error is returned.
 
+- **mint**: This function mints a new NFT, assigning it to a specified principal and storing its metadata and content.
+    - **Input**: Principal (to), MetadataDesc (metadata), Blob content (Vec<u8>)
+    - **Output**: MintResult containing the transaction ID and token ID
+    - **What it does**: The function creates a new NFT with the provided metadata and content, assigns it to the specified principal, and stores it in the canister's state. The transaction ID and token ID of the newly minted NFT are returned.
 
+### nft-wallet
 
-# 2. Tech
+Not in scope for this MVP. This code was cloned but not yet integrated into the current application. To be done in future iterations.
 
-## 2.2 Frontend Canister Logic
+## How to run this application locally
 
-## Comments
-Please note:
-This code is unfinished / in development
+- Clone the repo
+- Start local dfx replica in terminal with `dfx start`
+- Build canisters in another terminal with `dfx build`
+- Deploy geohash canister to get canister-id with `dfx deploy geohash`
+- Deploy dip721_nft_container with `dfx deploy dip721_nft_container` and specify geohash canister-id as principal
+- Deploy canisters `basic_ethereum`, `basic_bitcoin`, `internet_identity`
+- Insert canister-ids of dip721_nft_container, basic_ethereum and basic_bitcoin in `geohash/src/lib.rs` init function and `dfx build geohash`, then `dfx deploy --mode=reinstall geohash`
+- In root run `node setupEnv.js` to fill in Canister ids (internet_identity, geohash) in `frontend/.env` from `.dfx/local/canister_ids.json`
+- In `/frontend` run `npm run build`
+- In root run `dfx deploy frontend`
