@@ -20,6 +20,9 @@ Current platforms inform decisions like “where to eat?” or “where to buy?�
 ### We need a trusted public memory and value layer of world’s surface
 Just as Bitcoin revolutionized currency by making it a decentralized public good, we need a decentralized and tamper-proof public memory and value layer for the world. It is governed by a foundation or DAO and runs on the Internet Computer.
 
+VIDEO
+
+
 ## This application
 ... uses a set of canisters on the Internet Computer to create a grid of the world’s surface. Each square in the grid can hold information and value. Users authenticate with Internet Identity and interact with the squares via a React application. They read or contribute information or communicate value to other users.
 
@@ -31,6 +34,8 @@ The application controls the square. A decentralized governance system (e.g., a 
 ... creates fixed squares where each square is represented by a [geohash](https://en.wikipedia.org/wiki/Geohash). Each square / geohash is a [Dip721 Nft](https://github.com/Psychedelic/DIP721/blob/develop/spec.md) holding information such as an IPNS name pointing to metadata on IPFS. It also holds crypto addresses for Bitcoin, Ether, or USDC. The NFT points to changing information on IPFS like air quality index, crime rate, or car accident rate. This information is regularly updated via APIs or user contributions. The application interacts with Bitcoin or EVM blockchains to show balances and transact Bitcoin, Ether, or USDC between users and squares.
 
 ## Architecture
+
+You can find a schematic of the architecture in this [Google slide](https://docs.google.com/presentation/d/11YnsjIpe3zVtMEjBEjWnBFNIk1GdDwzVndu_FyET20o/edit?usp=sharing)
 
 ### geohash Canister
 
