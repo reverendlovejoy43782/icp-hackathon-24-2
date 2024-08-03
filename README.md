@@ -4,8 +4,8 @@ This is a basic version of a decentralized application built on the Internet Com
 
 # Table of Contents
 - [Introduction](#we-need-a-bitcoin-inspired-version-of-google-maps-as-a-public-good)
-- [Use case](#this-application-.-.-.)
-- [Technical overview](#Under-the-hood-it-.-.-.)
+- [Use case](#this-application)
+- [Technical overview](#Under-the-hood-it)
 - [Architecture](#Architecture)
 - [Run it yourself](#How-to-run-this-application-locally)
 
@@ -20,14 +20,14 @@ Current platforms inform decisions like “where to eat?” or “where to buy?�
 ### We need a trusted public memory and value layer of world’s surface
 Just as Bitcoin revolutionized currency by making it a decentralized public good, we need a decentralized and tamper-proof public memory and value layer for the world. It is governed by a foundation or DAO and runs on the Internet Computer.
 
-## This application ...
+## This application
 ... uses a set of canisters on the Internet Computer to create a grid of the world’s surface. Each square in the grid can hold information and value. Users authenticate with Internet Identity and interact with the squares via a React application. They read or contribute information or communicate value to other users.
 
 Users can send value to a square’s address or contribute by adding information, which can be compensated with some of the value held by the square. When an authenticated user first visits a square, its NFT is transferred to the user’s NFT wallet. Owning a square’s NFT does not provide control over the square; it is similar to owning digital art. NFT owners are patrons of the NFT and are encouraged to improve its health metrics and gather donations. They earn part of the square’s income when its health and donation flow are good. 
 
 The application controls the square. A decentralized governance system (e.g., a DAO, to be defined) controls the application. It sets and oversees rules for distributing value to users. The NFT transfer to users is not implemented in this MVP.
 
-## Under the hood it ...
+## Under the hood it
 ... creates fixed squares where each square is represented by a [geohash](https://en.wikipedia.org/wiki/Geohash). Each square / geohash is a [Dip721 Nft](https://github.com/Psychedelic/DIP721/blob/develop/spec.md) holding information such as an IPNS name pointing to metadata on IPFS. It also holds crypto addresses for Bitcoin, Ether, or USDC. The NFT points to changing information on IPFS like air quality index, crime rate, or car accident rate. This information is regularly updated via APIs or user contributions. The application interacts with Bitcoin or EVM blockchains to show balances and transact Bitcoin, Ether, or USDC between users and squares.
 
 ## Architecture
