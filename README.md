@@ -1,6 +1,12 @@
 # A data layer for the world (v2) 
 This is a basic version of a decentralized application built on the Internet Computer. It creates a geo-information platform that serves as a public good for everyone.
 
+
+
+# Table of Contents
+- [Introduction](#iWe need a Bitcoin-inspired version of Google Maps as a public good)
+
+
 ## We need a Bitcoin-inspired version of Google Maps as a public good
 Our understanding of the world’s surface increasingly comes from “second layers” like Google Maps. These layers are used by humans, cars, and other devices for navigation.
 
@@ -51,7 +57,7 @@ The frontend application is designed to interact with the Geohash Canister on th
 
 - **Geolocation Submission**: Users can input their geolocation (latitude and longitude) to get information about the corresponding square, including the geohash, geographical bounds, NFT information, and real-time metrics.
 
-- **Geohash Submission**: Users can input a geohash to retrieve information about the square it represents, including geographical bounds, NFT information, and real-time metrics.
+- **Geohash Submission**: Users can input a geohash for a geolocation. This location will be mapped to the square it belongs to, and the geohash of this square (of the geolocation of the center of the square) is returned, along with geographical bounds, NFT information, and real-time metrics.
 
 - **Update Rating**: Authenticated users can update the rating of a specific square, contributing to the user-generated data for that area.
 
