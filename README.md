@@ -155,13 +155,14 @@ https://www.loom.com/share/a2f56f02e9bc4b2091c5212f1fe0aaf9?sid=0a4f5d29-82bd-41
 ## How to run this application locally
 
 - Clone the repo
+- Create .env in frontend folder and add REACT_APP_GOOGLE_MAPS_API_KEY=KEY (create a Google Maps key in Google Cloud)
 - Start local dfx replica in terminal with `dfx start`
 - Build canisters in another terminal with `dfx build`
 - Deploy geohash canister to get canister-id with `dfx deploy geohash`
 - Deploy dip721_nft_container with `dfx deploy dip721_nft_container` and specify geohash canister-id as principal
 - Deploy canisters `basic_ethereum`, `basic_bitcoin`, `internet_identity`
 - Insert canister-ids of dip721_nft_container, basic_ethereum and basic_bitcoin in `geohash/src/lib.rs` init function and `dfx build geohash`, then `dfx deploy --mode=reinstall geohash`
-- In root run `node setupEnv.js` to create ENV file in frontend folder and fill in Canister ids (internet_identity, geohash) from `.dfx/local/canister_ids.json`
+- In root run `node setupEnv.js` to fill canister ids (internet_identity, geohash) from `.dfx/local/canister_ids.json` in frontend/.env
 - In `/frontend` run `npm install` and then `npm run build`
 - In root run `dfx deploy frontend`
 - Open frontend or canister candid UI using  `http://127.0.0.1:8001` (defined in dfx.json)
