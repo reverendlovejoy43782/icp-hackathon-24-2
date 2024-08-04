@@ -141,7 +141,16 @@ https://www.loom.com/share/a2f56f02e9bc4b2091c5212f1fe0aaf9?sid=0a4f5d29-82bd-41
 <img width="334" alt="image" src="./assets/home.png">
 
 
+#### Load square to provided geolocation
 
+<img width="334" alt="image" src="./assets/geolocation1.png">
+<img width="334" alt="image" src="./assets/geolocation2.png">
+
+
+#### Login with Internet Identity and update user rating
+
+<img width="334" alt="image" src="./assets/login.png">
+<img width="334" alt="image" src="./assets/rating.png">
 
 ## How to run this application locally
 
