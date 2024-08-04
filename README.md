@@ -1,5 +1,5 @@
 # A data layer for the world (v2) 
-This is a basic version of a decentralized application built on the Internet Computer. It creates a geo-information platform that serves as a public good for everyone.
+This is a basic version of a decentralized application built on the Internet Computer using Rust. It creates a geo-information platform that serves as a public good for everyone.
 
 
 # Table of Contents
@@ -7,6 +7,7 @@ This is a basic version of a decentralized application built on the Internet Com
 - [Use case](#this-application)
 - [Technical overview](#Under-the-hood-it)
 - [Architecture](#Architecture)
+- [Demo of the app (video, screenshots)](#Demo-of-the-app)
 - [Run it yourself](#How-to-run-this-application-locally)
 
 
@@ -14,12 +15,10 @@ This is a basic version of a decentralized application built on the Internet Com
 Our understanding of the world’s surface increasingly comes from “second layers” like Google Maps. These layers are used by humans, cars, and other devices for decision making and navigation.
 
 ### Map apps lack data for important geo decisions
-Current platforms inform decisions like “where to eat?” or “where to buy?” However, they lack the information needed to decide “where to move,” “where to avoid due to high crime rates,” or “which neighborhood most needs public health measures.” These decisions require data on pollution rates over time, flood or hurricane probabilities, and crime rates in specific areas. Furthermore, current second layers do not provide a way to communicate value directly tied to a location. This would enable compensating users for improving an area or donating to victims of a natural catastrophe in a specific region.
+Current platforms inform decisions like “where to eat?” or “where to buy?” However, they lack the information needed to decide “where to move,” “where to avoid due to high crime rates,” or “which neighborhood most needs public health measures.” These decisions require data on pollution rates over time, flood or hurricane probabilities, and crime rates in specific areas. Furthermore, current second layers do not provide a way to communicate value directly tied to a location. This would enable compensating users for improving an area or directly donating to victims of a natural catastrophe in a specific region.
 
 ### We need a trusted public memory and value layer of world’s surface
 Just as Bitcoin revolutionized currency by making it a decentralized public good, we need a decentralized and tamper-proof public memory and value layer for the world. It is governed by a foundation or DAO and runs on the Internet Computer.
-
-VIDEO
 
 
 ## This application
@@ -32,7 +31,7 @@ The application controls the square. A decentralized governance system (e.g., a 
 Let's imagine some use cases:
 
 **User owns square nft:**
-When you are the first user (authenticated with Internet Identity) to log in to a specific square, the NFT of this square becomes yours. While a square NFT does not give you control over its governance or funds, you will participate in a share of its donation income when the square’s health is good (e.g., good air quality index, low crime rate) and donations exceed a threshold. Holding a square NFT is not only an honor but also truly unique, as each square exists only once on the world’s surface. It also carries a mission to positively influence the square’s health and donation flow.
+When you are the first user (authenticated with Internet Identity) to log in to a specific square, the NFT of this square becomes yours. While a square NFT does not give you control over its governance or funds, you will participate in a share of its donation income when the square’s health is good (e.g., good air quality index, low crime rate) and donations exceed a threshold. Holding a square NFT is not only an honor but also truly unique, as each square exists only once on the world’s surface. It also carries a mission to positively influence the square’s health and donation flow. If the square’s health and donation flow remain low for a certain period, ownership of the NFT is transferred back to the application for someone else to claim.
 
 **Users contribute to squares:**
 Users can contribute to a square by donating to its addresses or adding information about the square. For example, in an area that experiences a heavy rainy season each year, causing basements to flood, a user can log this information. If enough other users in the area corroborate this information, the contributing user is rewarded with a share of the square’s funds. Additionally, the users who corroborate the information also receive rewards.
@@ -42,9 +41,6 @@ For anyone looking to move to an area or build a house, it’s important to know
 
 **Donating directly to square residents:**
 When a natural disaster happens, residents in the affected area need funds immediately to rebuild. Donations can be made directly to the square’s addresses in this area, which can be immediately distributed to residents through an automated system in the data layer application (governed by a DAO, for example). Therefore, Internet Identity needs to include a form of “proof of humanhood,” and the resident group can be defined by considering all Internet Identities that logged in regularly to squares in this area over a period of time in the past.
-
-
-https://www.loom.com/share/a2f56f02e9bc4b2091c5212f1fe0aaf9?sid=0a4f5d29-82bd-4198-b740-4bea5947af55
 
 
 ## Under the hood it
@@ -71,7 +67,7 @@ The canister provides three main functions:
 - **update_rating**: Allows users to update the rating of a square, serving as a simple MVP for user-contributed information.
     - **Input**: IPNS name (String), Rating (u32)
     - **Output**: Result indicating success or failure.
-    - **What it does**: Updates the rating for the specified square, provided the rating is within the valid range (1 to 10).
+    - **What it does**: Updates the rating for the specified square, provided the rating is within the valid range (1 to 10). For now IPNS name is the key to store the rating on the canister. In the future the IPNS name should point to a content ID on IPFS instead.
 
 
 ### frontend canister
@@ -129,7 +125,19 @@ The DIP721 NFT Container mints NFTs geohashes, IPNS names, and crypto addresses 
 
 ### nft-wallet
 
-Not in scope for this MVP. This code was cloned but not yet integrated into the current application. To be done in future iterations.
+Not in scope for this MVP. This code was cloned but not yet integrated into the current application. To be done in future iterations. This canister code was cloned from [this repo](https://github.com/dfinity/examples/tree/master/rust/nft-wallet). 
+
+
+## Demo of the app
+### Video
+
+https://www.loom.com/share/a2f56f02e9bc4b2091c5212f1fe0aaf9?sid=0a4f5d29-82bd-4198-b740-4bea5947af55
+
+
+### Screenthots
+
+
+
 
 ## How to run this application locally
 
@@ -141,7 +149,7 @@ Not in scope for this MVP. This code was cloned but not yet integrated into the 
 - Deploy canisters `basic_ethereum`, `basic_bitcoin`, `internet_identity`
 - Insert canister-ids of dip721_nft_container, basic_ethereum and basic_bitcoin in `geohash/src/lib.rs` init function and `dfx build geohash`, then `dfx deploy --mode=reinstall geohash`
 - In root run `node setupEnv.js` to create ENV file in frontend folder and fill in Canister ids (internet_identity, geohash) from `.dfx/local/canister_ids.json`
-- In `/frontend` run `npm run build`
+- In `/frontend` run `npm install` and then `npm run build`
 - In root run `dfx deploy frontend`
 - Open frontend or canister candid UI using  `http://127.0.0.1:8001` (defined in dfx.json)
 
