@@ -134,7 +134,11 @@ Not in scope for this MVP. This code was cloned but not yet integrated into the 
 https://www.loom.com/share/a2f56f02e9bc4b2091c5212f1fe0aaf9?sid=0a4f5d29-82bd-4198-b740-4bea5947af55
 
 
-### Screenthots
+### Screenshots
+
+#### Load react app
+
+<img width="334" alt="image" src="./assets/home.png">
 
 
 
