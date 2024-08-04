@@ -9,7 +9,6 @@ This is a basic version of a decentralized application built on the Internet Com
 - [Architecture](#Architecture)
 - [Run it yourself](#How-to-run-this-application-locally)
 
-Watch the application demo video: https://www.loom.com/share/a2f56f02e9bc4b2091c5212f1fe0aaf9?sid=82ccd8f4-b513-4ed2-a3a9-a7e5f66dd592
 
 ## We need a Bitcoin-inspired version of Google Maps as a public good
 Our understanding of the world’s surface increasingly comes from “second layers” like Google Maps. These layers are used by humans, cars, and other devices for decision making and navigation.
@@ -29,6 +28,24 @@ VIDEO
 Users can send value to a square’s address or contribute by adding information, which can be compensated with some of the value held by the square. When an authenticated user first visits a square, its NFT is transferred to the user’s NFT wallet. Owning a square’s NFT does not provide control over the square; it is similar to owning digital art. NFT owners are patrons of the square. They are encouraged to improve its health metrics and gather donations. They earn part of the square’s income when its health and donation flow are good. 
 
 The application controls the square. A decentralized governance system (e.g., a DAO, to be defined) controls the application. It sets and oversees rules for distributing value to users. The NFT transfer to users is not implemented in this MVP.
+
+Let's imagine some use cases:
+
+**User owns square nft:**
+When you are the first user (authenticated with Internet Identity) to log in to a specific square, the NFT of this square becomes yours. While a square NFT does not give you control over its governance or funds, you will participate in a share of its donation income when the square’s health is good (e.g., good air quality index, low crime rate) and donations exceed a threshold. Holding a square NFT is not only an honor but also truly unique, as each square exists only once on the world’s surface. It also carries a mission to positively influence the square’s health and donation flow.
+
+**Users contribute to squares:**
+Users can contribute to a square by donating to its addresses or adding information about the square. For example, in an area that experiences a heavy rainy season each year, causing basements to flood, a user can log this information. If enough other users in the area corroborate this information, the contributing user is rewarded with a share of the square’s funds. Additionally, the users who corroborate the information also receive rewards.
+
+**Users read square information:**
+For anyone looking to move to an area or build a house, it’s important to know what happens during different seasons to evaluate risks and costs, such as flooding or hurricanes. For example, if basements in a particular area flood at least once a year after heavy rains, this is valuable information to have before moving there or storing items in a newly rented basement. Normally, you only get such information by speaking to the right people. If users log such information on a square, others can gain valuable insights to base their decisions on.
+
+**Donating directly to square residents:**
+When a natural disaster happens, residents in the affected area need funds immediately to rebuild. Donations can be made directly to the square’s addresses in this area, which can be immediately distributed to residents through an automated system in the data layer application (governed by a DAO, for example). Therefore, Internet Identity needs to include a form of “proof of humanhood,” and the resident group can be defined by considering all Internet Identities that logged in regularly to squares in this area over a period of time in the past.
+
+
+https://www.loom.com/share/a2f56f02e9bc4b2091c5212f1fe0aaf9?sid=0a4f5d29-82bd-4198-b740-4bea5947af55
+
 
 ## Under the hood it
 ... creates fixed squares where each square is represented by a [geohash](https://en.wikipedia.org/wiki/Geohash). Each square / geohash is a [Dip721 Nft](https://github.com/Psychedelic/DIP721/blob/develop/spec.md) holding information such as an IPNS name pointing to metadata on IPFS. It also holds crypto addresses for Bitcoin, Ether, or USDC. The NFT points to changing information on IPFS like air quality index, crime rate, or car accident rate. This information is regularly updated via APIs or user contributions. The application interacts with Bitcoin or EVM blockchains to show balances and transact Bitcoin, Ether, or USDC between users and squares. IPNS / IPFS integration is not implemented in this MVP.
